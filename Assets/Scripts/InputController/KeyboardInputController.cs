@@ -13,14 +13,16 @@ namespace Assets.Scripts.Input
         private Vector2 _move;
 
         public Action<Vector2> OnMove { get; set; }
+        public Action OnIntection { get; set; }
 
         [Inject]
         public KeyboardInputController()
         {
             _inputActions = new KeyBoardInputActions();
-            _inputActions.Move.Enable();
-            _inputActions.Move.Move.performed += OnMovePerformed;
-            _inputActions.Move.Move.canceled += OnMoveCanceled;
+            _inputActions.BaseMap.Enable();
+            _inputActions.BaseMap.Move.performed += OnMovePerformed;
+            _inputActions.BaseMap.Move.canceled += OnMoveCanceled;
+            _inputActions.BaseMap.Interacteble.performed += OnInteractionHandler;
         }
 
         private void OnMovePerformed(InputAction.CallbackContext context)
@@ -35,10 +37,16 @@ namespace Assets.Scripts.Input
             OnMove?.Invoke(_move);
         }
 
+        private void OnInteractionHandler(InputAction.CallbackContext context)
+        {
+            OnIntection?.Invoke();
+        }
+
         public void Dispose()
         {
-            _inputActions.Move.Move.performed -= OnMovePerformed;
-            _inputActions.Move.Move.canceled -= OnMoveCanceled;
+            _inputActions.BaseMap.Move.performed -= OnMovePerformed;
+            _inputActions.BaseMap.Move.canceled -= OnMoveCanceled;
+            _inputActions.BaseMap.Interacteble.performed -= OnInteractionHandler;
         }
     }
 }

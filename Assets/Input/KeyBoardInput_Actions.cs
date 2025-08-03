@@ -91,7 +91,7 @@ namespace Assets.Input
     ""name"": ""KeyBoardInput_Actions"",
     ""maps"": [
         {
-            ""name"": ""Move"",
+            ""name"": ""BaseMap"",
             ""id"": ""bc7a7e67-698c-4d4c-9aef-dbf06231db74"",
             ""actions"": [
                 {
@@ -102,6 +102,15 @@ namespace Assets.Input
                     ""processors"": """",
                     ""interactions"": """",
                     ""initialStateCheck"": true
+                },
+                {
+                    ""name"": ""Interacteble"",
+                    ""type"": ""Button"",
+                    ""id"": ""04b70101-9056-49af-936a-35e53b2dd651"",
+                    ""expectedControlType"": """",
+                    ""processors"": """",
+                    ""interactions"": """",
+                    ""initialStateCheck"": false
                 }
             ],
             ""bindings"": [
@@ -159,6 +168,17 @@ namespace Assets.Input
                     ""action"": ""Move"",
                     ""isComposite"": false,
                     ""isPartOfComposite"": true
+                },
+                {
+                    ""name"": """",
+                    ""id"": ""57da5040-9e54-49d4-9fc3-d85b671f8927"",
+                    ""path"": ""<Keyboard>/space"",
+                    ""interactions"": """",
+                    ""processors"": """",
+                    ""groups"": "";Keyboard"",
+                    ""action"": ""Interacteble"",
+                    ""isComposite"": false,
+                    ""isPartOfComposite"": false
                 }
             ]
         }
@@ -177,14 +197,15 @@ namespace Assets.Input
         }
     ]
 }");
-            // Move
-            m_Move = asset.FindActionMap("Move", throwIfNotFound: true);
-            m_Move_Move = m_Move.FindAction("Move", throwIfNotFound: true);
+            // BaseMap
+            m_BaseMap = asset.FindActionMap("BaseMap", throwIfNotFound: true);
+            m_BaseMap_Move = m_BaseMap.FindAction("Move", throwIfNotFound: true);
+            m_BaseMap_Interacteble = m_BaseMap.FindAction("Interacteble", throwIfNotFound: true);
         }
 
         ~@KeyBoardInputActions()
         {
-            UnityEngine.Debug.Assert(!m_Move.enabled, "This will cause a leak and performance issues, KeyBoardInputActions.Move.Disable() has not been called.");
+            UnityEngine.Debug.Assert(!m_BaseMap.enabled, "This will cause a leak and performance issues, KeyBoardInputActions.BaseMap.Disable() has not been called.");
         }
 
         /// <summary>
@@ -257,29 +278,34 @@ namespace Assets.Input
             return asset.FindBinding(bindingMask, out action);
         }
 
-        // Move
-        private readonly InputActionMap m_Move;
-        private List<IMoveActions> m_MoveActionsCallbackInterfaces = new List<IMoveActions>();
-        private readonly InputAction m_Move_Move;
+        // BaseMap
+        private readonly InputActionMap m_BaseMap;
+        private List<IBaseMapActions> m_BaseMapActionsCallbackInterfaces = new List<IBaseMapActions>();
+        private readonly InputAction m_BaseMap_Move;
+        private readonly InputAction m_BaseMap_Interacteble;
         /// <summary>
-        /// Provides access to input actions defined in input action map "Move".
+        /// Provides access to input actions defined in input action map "BaseMap".
         /// </summary>
-        public struct MoveActions
+        public struct BaseMapActions
         {
             private @KeyBoardInputActions m_Wrapper;
 
             /// <summary>
             /// Construct a new instance of the input action map wrapper class.
             /// </summary>
-            public MoveActions(@KeyBoardInputActions wrapper) { m_Wrapper = wrapper; }
+            public BaseMapActions(@KeyBoardInputActions wrapper) { m_Wrapper = wrapper; }
             /// <summary>
-            /// Provides access to the underlying input action "Move/Move".
+            /// Provides access to the underlying input action "BaseMap/Move".
             /// </summary>
-            public InputAction @Move => m_Wrapper.m_Move_Move;
+            public InputAction @Move => m_Wrapper.m_BaseMap_Move;
+            /// <summary>
+            /// Provides access to the underlying input action "BaseMap/Interacteble".
+            /// </summary>
+            public InputAction @Interacteble => m_Wrapper.m_BaseMap_Interacteble;
             /// <summary>
             /// Provides access to the underlying input action map instance.
             /// </summary>
-            public InputActionMap Get() { return m_Wrapper.m_Move; }
+            public InputActionMap Get() { return m_Wrapper.m_BaseMap; }
             /// <inheritdoc cref="UnityEngine.InputSystem.InputActionMap.Enable()" />
             public void Enable() { Get().Enable(); }
             /// <inheritdoc cref="UnityEngine.InputSystem.InputActionMap.Disable()" />
@@ -287,9 +313,9 @@ namespace Assets.Input
             /// <inheritdoc cref="UnityEngine.InputSystem.InputActionMap.enabled" />
             public bool enabled => Get().enabled;
             /// <summary>
-            /// Implicitly converts an <see ref="MoveActions" /> to an <see ref="InputActionMap" /> instance.
+            /// Implicitly converts an <see ref="BaseMapActions" /> to an <see ref="InputActionMap" /> instance.
             /// </summary>
-            public static implicit operator InputActionMap(MoveActions set) { return set.Get(); }
+            public static implicit operator InputActionMap(BaseMapActions set) { return set.Get(); }
             /// <summary>
             /// Adds <see cref="InputAction.started"/>, <see cref="InputAction.performed"/> and <see cref="InputAction.canceled"/> callbacks provided via <param cref="instance" /> on all input actions contained in this map.
             /// </summary>
@@ -297,14 +323,17 @@ namespace Assets.Input
             /// <remarks>
             /// If <paramref name="instance" /> is <c>null</c> or <paramref name="instance"/> have already been added this method does nothing.
             /// </remarks>
-            /// <seealso cref="MoveActions" />
-            public void AddCallbacks(IMoveActions instance)
+            /// <seealso cref="BaseMapActions" />
+            public void AddCallbacks(IBaseMapActions instance)
             {
-                if (instance == null || m_Wrapper.m_MoveActionsCallbackInterfaces.Contains(instance)) return;
-                m_Wrapper.m_MoveActionsCallbackInterfaces.Add(instance);
+                if (instance == null || m_Wrapper.m_BaseMapActionsCallbackInterfaces.Contains(instance)) return;
+                m_Wrapper.m_BaseMapActionsCallbackInterfaces.Add(instance);
                 @Move.started += instance.OnMove;
                 @Move.performed += instance.OnMove;
                 @Move.canceled += instance.OnMove;
+                @Interacteble.started += instance.OnInteracteble;
+                @Interacteble.performed += instance.OnInteracteble;
+                @Interacteble.canceled += instance.OnInteracteble;
             }
 
             /// <summary>
@@ -313,21 +342,24 @@ namespace Assets.Input
             /// <remarks>
             /// Calling this method when <paramref name="instance" /> have not previously been registered has no side-effects.
             /// </remarks>
-            /// <seealso cref="MoveActions" />
-            private void UnregisterCallbacks(IMoveActions instance)
+            /// <seealso cref="BaseMapActions" />
+            private void UnregisterCallbacks(IBaseMapActions instance)
             {
                 @Move.started -= instance.OnMove;
                 @Move.performed -= instance.OnMove;
                 @Move.canceled -= instance.OnMove;
+                @Interacteble.started -= instance.OnInteracteble;
+                @Interacteble.performed -= instance.OnInteracteble;
+                @Interacteble.canceled -= instance.OnInteracteble;
             }
 
             /// <summary>
-            /// Unregisters <param cref="instance" /> and unregisters all input action callbacks via <see cref="MoveActions.UnregisterCallbacks(IMoveActions)" />.
+            /// Unregisters <param cref="instance" /> and unregisters all input action callbacks via <see cref="BaseMapActions.UnregisterCallbacks(IBaseMapActions)" />.
             /// </summary>
-            /// <seealso cref="MoveActions.UnregisterCallbacks(IMoveActions)" />
-            public void RemoveCallbacks(IMoveActions instance)
+            /// <seealso cref="BaseMapActions.UnregisterCallbacks(IBaseMapActions)" />
+            public void RemoveCallbacks(IBaseMapActions instance)
             {
-                if (m_Wrapper.m_MoveActionsCallbackInterfaces.Remove(instance))
+                if (m_Wrapper.m_BaseMapActionsCallbackInterfaces.Remove(instance))
                     UnregisterCallbacks(instance);
             }
 
@@ -337,21 +369,21 @@ namespace Assets.Input
             /// <remarks>
             /// If <paramref name="instance" /> is <c>null</c>, calling this method will only unregister all existing callbacks but not register any new callbacks.
             /// </remarks>
-            /// <seealso cref="MoveActions.AddCallbacks(IMoveActions)" />
-            /// <seealso cref="MoveActions.RemoveCallbacks(IMoveActions)" />
-            /// <seealso cref="MoveActions.UnregisterCallbacks(IMoveActions)" />
-            public void SetCallbacks(IMoveActions instance)
+            /// <seealso cref="BaseMapActions.AddCallbacks(IBaseMapActions)" />
+            /// <seealso cref="BaseMapActions.RemoveCallbacks(IBaseMapActions)" />
+            /// <seealso cref="BaseMapActions.UnregisterCallbacks(IBaseMapActions)" />
+            public void SetCallbacks(IBaseMapActions instance)
             {
-                foreach (var item in m_Wrapper.m_MoveActionsCallbackInterfaces)
+                foreach (var item in m_Wrapper.m_BaseMapActionsCallbackInterfaces)
                     UnregisterCallbacks(item);
-                m_Wrapper.m_MoveActionsCallbackInterfaces.Clear();
+                m_Wrapper.m_BaseMapActionsCallbackInterfaces.Clear();
                 AddCallbacks(instance);
             }
         }
         /// <summary>
-        /// Provides a new <see cref="MoveActions" /> instance referencing this action map.
+        /// Provides a new <see cref="BaseMapActions" /> instance referencing this action map.
         /// </summary>
-        public MoveActions @Move => new MoveActions(this);
+        public BaseMapActions @BaseMap => new BaseMapActions(this);
         private int m_KeyboardSchemeIndex = -1;
         /// <summary>
         /// Provides access to the input control scheme.
@@ -366,11 +398,11 @@ namespace Assets.Input
             }
         }
         /// <summary>
-        /// Interface to implement callback methods for all input action callbacks associated with input actions defined by "Move" which allows adding and removing callbacks.
+        /// Interface to implement callback methods for all input action callbacks associated with input actions defined by "BaseMap" which allows adding and removing callbacks.
         /// </summary>
-        /// <seealso cref="MoveActions.AddCallbacks(IMoveActions)" />
-        /// <seealso cref="MoveActions.RemoveCallbacks(IMoveActions)" />
-        public interface IMoveActions
+        /// <seealso cref="BaseMapActions.AddCallbacks(IBaseMapActions)" />
+        /// <seealso cref="BaseMapActions.RemoveCallbacks(IBaseMapActions)" />
+        public interface IBaseMapActions
         {
             /// <summary>
             /// Method invoked when associated input action "Move" is either <see cref="UnityEngine.InputSystem.InputAction.started" />, <see cref="UnityEngine.InputSystem.InputAction.performed" /> or <see cref="UnityEngine.InputSystem.InputAction.canceled" />.
@@ -379,6 +411,13 @@ namespace Assets.Input
             /// <seealso cref="UnityEngine.InputSystem.InputAction.performed" />
             /// <seealso cref="UnityEngine.InputSystem.InputAction.canceled" />
             void OnMove(InputAction.CallbackContext context);
+            /// <summary>
+            /// Method invoked when associated input action "Interacteble" is either <see cref="UnityEngine.InputSystem.InputAction.started" />, <see cref="UnityEngine.InputSystem.InputAction.performed" /> or <see cref="UnityEngine.InputSystem.InputAction.canceled" />.
+            /// </summary>
+            /// <seealso cref="UnityEngine.InputSystem.InputAction.started" />
+            /// <seealso cref="UnityEngine.InputSystem.InputAction.performed" />
+            /// <seealso cref="UnityEngine.InputSystem.InputAction.canceled" />
+            void OnInteracteble(InputAction.CallbackContext context);
         }
     }
 }

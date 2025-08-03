@@ -23,6 +23,7 @@ namespace Assets.Installer
         {
             BindWallet();
             BindPlayer();
+            Container.Bind<InteractableService>().AsSingle().NonLazy();
         }
 
         private void BindPlayer()
@@ -30,7 +31,7 @@ namespace Assets.Installer
             Container.Bind<PlayerConfig>().FromInstance(_playerConfig);
             Player character = Container.InstantiatePrefabForComponent<Player>(_characterController, _playerSpawnpPoint.position, Quaternion.identity, null);
             Container.BindInterfacesAndSelfTo<Player>().FromInstance(character).AsSingle();
-            Container.Bind<MoveHandler>().AsSingle().WithArguments(character.MoveController, character.Animator).NonLazy();
+            Container.BindInterfacesAndSelfTo<CharacterInputHandler>().AsSingle().WithArguments(character.MoveController).NonLazy();
             _cinemachineCamera.Follow = character.transform;
         }
 

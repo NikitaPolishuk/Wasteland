@@ -3,7 +3,7 @@
     "name": "KeyBoardInput_Actions",
     "maps": [
         {
-            "name": "Move",
+            "name": "BaseMap",
             "id": "bc7a7e67-698c-4d4c-9aef-dbf06231db74",
             "actions": [
                 {
@@ -14,6 +14,15 @@
                     "processors": "",
                     "interactions": "",
                     "initialStateCheck": true
+                },
+                {
+                    "name": "Interacteble",
+                    "type": "Button",
+                    "id": "04b70101-9056-49af-936a-35e53b2dd651",
+                    "expectedControlType": "",
+                    "processors": "",
+                    "interactions": "",
+                    "initialStateCheck": false
                 }
             ],
             "bindings": [
@@ -71,6 +80,17 @@
                     "action": "Move",
                     "isComposite": false,
                     "isPartOfComposite": true
+                },
+                {
+                    "name": "",
+                    "id": "57da5040-9e54-49d4-9fc3-d85b671f8927",
+                    "path": "<Keyboard>/space",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": ";Keyboard",
+                    "action": "Interacteble",
+                    "isComposite": false,
+                    "isPartOfComposite": false
                 }
             ]
         }

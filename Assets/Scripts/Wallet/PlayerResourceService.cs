@@ -7,6 +7,7 @@ namespace Assets.Scripts.Wallet
     public class PlayerResourceService : IDisposable
     {
         private ResourceWallet _wallet;
+        public Action<ResourceType, int> ResourceChange;
 
         [Inject]
         public PlayerResourceService(ResourceWallet wallet)
@@ -14,12 +15,23 @@ namespace Assets.Scripts.Wallet
             _wallet = wallet;
 
             var gold = new GoldResource();
-            gold.Add(50);
             _wallet.RegisterResource(gold);
+            Add(ResourceType.Gold, 30);
         }
 
-        public void Add(ResourceType type, int amount) => _wallet.Add(type, amount);
-        public bool TrySpend(ResourceType type, int amount) => _wallet.TrySpend(type, amount);
+        public void Add(ResourceType type, int amount)
+        {
+            _wallet.Add(type, amount);
+            ResourceChange?.Invoke(type, GetAmount(type));
+        }
+
+        public bool TrySpend(ResourceType type, int amount)
+        {
+            var final = _wallet.TrySpend(type, amount);
+            ResourceChange?.Invoke(type, GetAmount(type));
+            return final;
+        }
+
         public int GetAmount(ResourceType type) => _wallet.GetAmount(type);
 
         public void Dispose()
