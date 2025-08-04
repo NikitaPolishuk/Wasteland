@@ -10,10 +10,10 @@ namespace Assets.Scripts.UI
     public class CurrencyUiController
     {
         private readonly Dictionary<ResourceType, ICurrencyView> _views;
-        private readonly PlayerResourceService _resourceService;
+        private readonly IResourceService _resourceService;
 
         [Inject]
-        public CurrencyUiController(List<ICurrencyView> views, PlayerResourceService playerResourceService)
+        public CurrencyUiController(List<ICurrencyView> views, IResourceService playerResourceService)
         {
             _resourceService = playerResourceService;
             _resourceService.ResourceChange += ResourceChangeHandler;

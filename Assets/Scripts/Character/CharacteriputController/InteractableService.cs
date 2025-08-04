@@ -4,7 +4,7 @@ using Zenject;
 
 namespace Assets.Scripts.Character
 {
-    public class InteractableService
+    public class InteractableService : IInteractableService
     {
         public IInteractable Current { get; private set; }
         private IInput _inputReader;

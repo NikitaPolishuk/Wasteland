@@ -23,7 +23,7 @@ namespace Assets.Installer
         {
             BindWallet();
             BindPlayer();
-            Container.Bind<InteractableService>().AsSingle().NonLazy();
+            Container.Bind<IInteractableService>().To<InteractableService>().AsSingle().NonLazy();
         }
 
         private void BindPlayer()
@@ -38,7 +38,7 @@ namespace Assets.Installer
         private void BindWallet()
         {
             Container.Bind<ResourceWallet>().AsSingle();
-            Container.Bind<PlayerResourceService>().AsSingle().NonLazy();
+            Container.Bind<IResourceService>().To<PlayerResourceService>().AsSingle().NonLazy();
         }
     }
 }

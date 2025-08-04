@@ -1,7 +1,4 @@
-using Assets.Scripts.Character;
-using Assets.Scripts.Constants;
 using Assets.Scripts.Interfaces;
-using Assets.Scripts.Wallet;
 using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
@@ -15,70 +12,70 @@ namespace Assets.Scripts.Buildings
         [SerializeField] private BuildPrice _buildPrice;
 
         private Dictionary<int, BuildingLevelData> _levels;
-        private InteractableService _interactableService;
-        private PlayerResourceService _playerResourceService;
+        private IInteractableService _interactableService;
+        private IResourceService _playerResourceService;
+        private GameObject _currentAppearance;
 
-        public int Level { get; private set; } = 1;
+        public int Level { get; private set; } = 0;
+        public int MaxLvl;
 
         [Inject]
-        private void Init(InteractableService interactableService, PlayerResourceService referenceService)
+        private void Init(IInteractableService interactableService, IResourceService referenceService)
         {
             _playerResourceService = referenceService;
             _interactableService = interactableService;
-        }
 
-        private void Awake()
-        {
             _levels = _levelEntries.ToDictionary(entry => entry.Level, entry => entry);
-            UpgradeToLevel(Level);
+            MaxLvl = _levels.Keys.Max();
             _buildPrice.ActivePrice(false);
+            UpgradeToLevel(1);
         }
 
         public bool TryGetLevelData(int level, out BuildingLevelData data)
         {
-            data = new BuildingLevelData();
+            data = null;
             return _levels == null ? false : _levels.TryGetValue(level, out data);
         }
 
         public void UpgradeToLevel(int newLevel)
         {
-            if (!TryGetLevelData(newLevel, out var data)) return;
+            if (!TryGetLevelData(newLevel, out var data) || newLevel == Level || newLevel > MaxLvl) return;
+            if (!IsMaxLevel()) _buildPrice.ActivePrice(false);
 
             Level = newLevel;
-
-            foreach (var item in _levelEntries)
-            {
-                item.Appearance.gameObject.SetActive(false);
-            }
-
-            data.Appearance.gameObject.SetActive(true);
-
-            if(Level == _levels.Keys.Max())
-            {
-                _buildPrice.ActivePrice(false);
-            }
-
+            SetAppearance(data.Appearance);
             Debug.Log($"Building upgraded to level {Level}");
         }
 
-        private void OnTriggerEnter2D(Collider2D collision)
+        private void SetAppearance(GameObject newAppearance)
         {
-            if (!collision.CompareTag(Constants.Constants.PLAYER_TAG) || Level == _levels.Keys.Max()) return;
-            _buildPrice.ActivePrice(true);
-            _interactableService.Set(this);
-        }
+            if (_currentAppearance != null) _currentAppearance.SetActive(false);
 
-        private void OnTriggerExit2D(Collider2D collision)
-        {
-            if (!collision.CompareTag(Constants.Constants.PLAYER_TAG) || Level == _levels.Keys.Max()) return;
-            _buildPrice.ActivePrice(false);
-            _interactableService.Clear(this);
+            newAppearance.SetActive(true);
+            _currentAppearance = newAppearance;
         }
 
         public void Interactable()
         {
             var spend = _playerResourceService.TrySpend(Enum.ResourceType.Gold, _levels[Level + 1].UpgradeCost);
-           if (Level != _levels.Keys.Max() && spend) UpgradeToLevel(Level+1);
-        } 
+            if (!IsMaxLevel() && spend) UpgradeToLevel(Level + 1);
+        }
+
+        private void PlayerTriggerCollider(bool value, Collider2D collision)
+        {
+            if (!IsPlayerCollider(collision) || IsMaxLevel()) return;
+
+            if (value) _interactableService.Set(this);
+            else _interactableService.Clear(this);
+
+            _buildPrice.ActivePrice(value);
+        }
+
+        private void OnTriggerEnter2D(Collider2D collision) => PlayerTriggerCollider(true, collision);
+
+        private void OnTriggerExit2D(Collider2D collision) => PlayerTriggerCollider(false, collision);
+
+        private bool IsMaxLevel() => Level == MaxLvl;
+        private bool IsPlayerCollider(Collider2D collider) => collider.CompareTag(Constants.Constants.PLAYER_TAG);
     }
 }

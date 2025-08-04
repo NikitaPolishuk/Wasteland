@@ -1,13 +1,14 @@
 using Assets.Scripts.Enum;
+using Assets.Scripts.Interfaces;
 using System;
 using Zenject;
 
 namespace Assets.Scripts.Wallet
 {
-    public class PlayerResourceService : IDisposable
+    public class PlayerResourceService : IResourceService, IDisposable
     {
         private ResourceWallet _wallet;
-        public Action<ResourceType, int> ResourceChange;
+        public Action<ResourceType, int> ResourceChange { get; set; }
 
         [Inject]
         public PlayerResourceService(ResourceWallet wallet)
