@@ -10,17 +10,16 @@ namespace Assets.Scripts.Character
     public class CharacterInputHandler : IDisposable, IFixedTickable
     {
         private IInput _inputReader;
-        private IMoveController _movable;
+        private IMovable _movable;
         private PlayerConfig _playerConfig;
 
         private Vector2 _inputDirection;
 
         [Inject]
-        public CharacterInputHandler(IInput input, IMoveController movable, PlayerConfig playerConfig)
+        public CharacterInputHandler(IInput input, IMovable movable)
         {
             _inputReader = input;
             _movable = movable;
-            _playerConfig = playerConfig;
 
             _inputReader.OnMove += OnMoveHandler;
         }
@@ -32,7 +31,7 @@ namespace Assets.Scripts.Character
 
         public void FixedTick()
         {
-            _movable.Move(_inputDirection, _playerConfig.Speed);
+            _movable.MoveController.Move(_inputDirection, _movable.Speed);
         }
 
         public void Dispose()

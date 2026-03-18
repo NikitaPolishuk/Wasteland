@@ -5,6 +5,7 @@ using UnityEngine;
 public class BuildingLevelData
 {
     public int Level;
+    public int MaxHp;
     public int UpgradeCost;
     public GameObject Appearance;
 }

@@ -1,0 +1,25 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 13f0be3396335d141b0227f66704c080, type: 3}
+  m_Name: CampBuilding
+  m_EditorClassIdentifier: 
+  BuildingType: 0
+  BuildingPrefab: {fileID: 2721539608872415827, guid: 1de892df5b98ac644910e0a4a9df0264, type: 3}
+  Levels:
+  - Level: 0
+    AppearancePrefab: {fileID: 1174589474506531561, guid: e149b0709b93ae24d83e9d37cde70f57, type: 3}
+    UpgradeCost: 0
+    MaxHp: 0
+  - Level: 1
+    AppearancePrefab: {fileID: 2402836409929433745, guid: 395ab3a5bbf1a1042bd2a3cef0ec0059, type: 3}
+    UpgradeCost: 5
+    MaxHp: 0

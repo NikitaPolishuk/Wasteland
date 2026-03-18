@@ -5,7 +5,7 @@ using Zenject;
 
 namespace Assets.Scripts.Character
 {
-    public class Player : MonoBehaviour
+    public class Player : MonoBehaviour, IMovable
     {
         public IMoveController MoveController { get; private set; }
         public IAnimator Animator { get; private set; }

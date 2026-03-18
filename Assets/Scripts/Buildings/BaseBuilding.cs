@@ -1,4 +1,6 @@
+using Assets.ScriptableObjects.BuildingConfig;
 using Assets.Scripts.Interfaces;
+using Assets.Scripts.Systems;
 using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
@@ -6,32 +8,55 @@ using Zenject;
 
 namespace Assets.Scripts.Buildings
 {
-    public abstract class BaseBuilding : MonoBehaviour, IInteractable
+    public abstract class BaseBuilding : MonoBehaviour, IInteractable, IDamageable, ITarget
     {
-        [SerializeField] private List<BuildingLevelData> _levelEntries;
         [SerializeField] private BuildPrice _buildPrice;
+        [SerializeField] private HealthSystem _healthSystem;
 
-        private Dictionary<int, BuildingLevelData> _levels;
+        private Dictionary<int, BuildingLevelConfig> _levels;
+        private Dictionary<int, GameObject> _appearanceInstances;
         private IInteractableService _interactableService;
         private IResourceService _playerResourceService;
         private GameObject _currentAppearance;
 
-        public int Level { get; private set; } = 0;
+        public int Level { get; private set; } = -1;
         public int MaxLvl;
+        public int CurrentHp => _healthSystem.CurrentHp;
+        public int MaxHp => _healthSystem.MaxHp;
+        public bool IsAlive => _healthSystem.IsAlive;
+        public Transform Transform => transform;
 
         [Inject]
         private void Init(IInteractableService interactableService, IResourceService referenceService)
         {
             _playerResourceService = referenceService;
             _interactableService = interactableService;
-
-            _levels = _levelEntries.ToDictionary(entry => entry.Level, entry => entry);
-            MaxLvl = _levels.Keys.Max();
-            _buildPrice.ActivePrice(false);
-            UpgradeToLevel(1);
         }
 
-        public bool TryGetLevelData(int level, out BuildingLevelData data)
+        public void Initialize(BuildingConfig config)
+        {
+            _levels = config.Levels.ToDictionary(entry => entry.Level, entry => entry);
+            SpawnAllAppearances();
+            MaxLvl = _levels.Keys.Max();
+            _buildPrice.ActivePrice(false);
+            UpgradeToLevel(0);
+        }
+
+        private void SpawnAllAppearances()
+        {
+            _appearanceInstances = new Dictionary<int, GameObject>();
+            foreach (var level in _levels.Values)
+            {
+                if (level.AppearancePrefab != null)
+                {
+                    var appearance = Instantiate(level.AppearancePrefab, transform);
+                    appearance.SetActive(false);
+                    _appearanceInstances[level.Level] = appearance;
+                }
+            }
+        }
+
+        public bool TryGetLevelData(int level, out BuildingLevelConfig data)
         {
             data = null;
             return _levels == null ? false : _levels.TryGetValue(level, out data);
@@ -39,26 +64,63 @@ namespace Assets.Scripts.Buildings
 
         public void UpgradeToLevel(int newLevel)
         {
-            if (!TryGetLevelData(newLevel, out var data) || newLevel == Level || newLevel > MaxLvl) return;
-            if (!IsMaxLevel()) _buildPrice.ActivePrice(false);
+            if (!CanUpgradeToLevel(newLevel, out var data)) return;
 
+            ApplyUpgrade(newLevel, data);
+        }
+
+        private bool CanUpgradeToLevel(int newLevel, out BuildingLevelConfig data)
+        {
+            data = null;
+
+            if (newLevel <= Level) return false;
+            if (newLevel > MaxLvl) return false;
+            if (!TryGetLevelData(newLevel, out data)) return false;
+
+            return true;
+        }
+
+        private void ApplyUpgrade(int newLevel, BuildingLevelConfig data)
+        {
             Level = newLevel;
-            SetAppearance(data.Appearance);
+            SetAppearance(newLevel);
+            _healthSystem?.Initialize(data.MaxHp);
+            
+            if (IsMaxLevel())
+            {
+                _buildPrice.ActivePrice(false);
+                _interactableService.Clear(this);
+            }
+
             Debug.Log($"Building upgraded to level {Level}");
         }
 
-        private void SetAppearance(GameObject newAppearance)
+        private void SetAppearance(int level)
         {
             if (_currentAppearance != null) _currentAppearance.SetActive(false);
 
-            newAppearance.SetActive(true);
-            _currentAppearance = newAppearance;
+            if (_appearanceInstances.TryGetValue(level, out var appearance))
+            {
+                appearance.SetActive(true);
+                _currentAppearance = appearance;
+            }
         }
 
         public void Interactable()
         {
             var spend = _playerResourceService.TrySpend(Enum.ResourceType.Gold, _levels[Level + 1].UpgradeCost);
             if (!IsMaxLevel() && spend) UpgradeToLevel(Level + 1);
+        }
+
+        public void TakeDamage(int amount)
+        {
+            _healthSystem.TakeDamage(amount);
+
+            if (!IsAlive)
+            {
+                Debug.Log($"{gameObject.name} destroyed!");
+                Destroy(gameObject);
+            }
         }
 
         private void PlayerTriggerCollider(bool value, Collider2D collision)
