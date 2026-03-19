@@ -31,6 +31,7 @@ namespace Assets.Installer
 
         public override void InstallBindings()
         {
+            Application.targetFrameRate = 60;
             BindWallet();
             BindPlayer();
             BindEnemySystem();

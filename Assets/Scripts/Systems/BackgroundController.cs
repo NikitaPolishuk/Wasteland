@@ -15,7 +15,7 @@ namespace Systems
             _length = GetComponent<SpriteRenderer>().bounds.size.x;
         }
         
-        void Update()
+        void FixedUpdate()
         {
             float distance = _cam.transform.position.x * ParallaxEffect;
             var movement = _cam.transform.position.x * (1 - ParallaxEffect);
