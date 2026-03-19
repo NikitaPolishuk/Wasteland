@@ -25,7 +25,7 @@ Transform:
   m_GameObject: {fileID: 2402836409929433745}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: -4.4, y: 0.23, z: 0}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
@@ -59,14 +59,15 @@ Transform:
   m_GameObject: {fileID: 4778263361094185831}
   serializedVersion: 2
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: 0, y: 0, z: 0}
-  m_LocalScale: {x: 10, y: 10, z: 10}
+  m_LocalPosition: {x: 0.65, y: 2.12, z: 0}
+  m_LocalScale: {x: 0.4, y: 0.4, z: 0.4}
   m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 1868002494551255144}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!212 &2566134805807047261
 SpriteRenderer:
+  serializedVersion: 2
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
@@ -85,6 +86,8 @@ SpriteRenderer:
   m_RayTracingAccelStructBuildFlagsOverride: 0
   m_RayTracingAccelStructBuildFlags: 1
   m_SmallMeshCulling: 1
+  m_ForceMeshLod: -1
+  m_MeshLodSelectionBias: 0
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
@@ -106,19 +109,20 @@ SpriteRenderer:
   m_AutoUVMaxDistance: 0.5
   m_AutoUVMaxAngle: 89
   m_LightmapParameters: {fileID: 0}
+  m_GlobalIlluminationMeshLod: 0
   m_SortingLayerID: 1012111397
   m_SortingLayer: 2
-  m_SortingOrder: 0
-  m_Sprite: {fileID: -3369129005453166177, guid: b09a8a39aac56bd419fa1da3368d9943, type: 3}
+  m_SortingOrder: -2
+  m_MaskInteraction: 0
+  m_Sprite: {fileID: 1743941621189459936, guid: db1a7a07b29676f4eb272d36681a51b2, type: 3}
   m_Color: {r: 1, g: 1, b: 1, a: 1}
   m_FlipX: 0
   m_FlipY: 0
   m_DrawMode: 0
-  m_Size: {x: 0.34, y: 0.26}
+  m_Size: {x: 1.82, y: 1.74}
   m_AdaptiveModeThreshold: 0.5
   m_SpriteTileMode: 0
   m_WasSpriteAssigned: 1
-  m_MaskInteraction: 0
   m_SpriteSortPoint: 0
 --- !u!1001 &6272914216758783340
 PrefabInstance:
@@ -133,12 +137,24 @@ PrefabInstance:
       value: Campfire
       objectReference: {fileID: 0}
     - target: {fileID: 3629656984953083481, guid: e149b0709b93ae24d83e9d37cde70f57, type: 3}
+      propertyPath: m_LocalScale.x
+      value: 0.8
+      objectReference: {fileID: 0}
+    - target: {fileID: 3629656984953083481, guid: e149b0709b93ae24d83e9d37cde70f57, type: 3}
+      propertyPath: m_LocalScale.y
+      value: 0.8
+      objectReference: {fileID: 0}
+    - target: {fileID: 3629656984953083481, guid: e149b0709b93ae24d83e9d37cde70f57, type: 3}
+      propertyPath: m_LocalScale.z
+      value: 0.8
+      objectReference: {fileID: 0}
+    - target: {fileID: 3629656984953083481, guid: e149b0709b93ae24d83e9d37cde70f57, type: 3}
       propertyPath: m_LocalPosition.x
-      value: -0.61
+      value: -0.749
       objectReference: {fileID: 0}
     - target: {fileID: 3629656984953083481, guid: e149b0709b93ae24d83e9d37cde70f57, type: 3}
       propertyPath: m_LocalPosition.y
-      value: -0.86
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 3629656984953083481, guid: e149b0709b93ae24d83e9d37cde70f57, type: 3}
       propertyPath: m_LocalPosition.z

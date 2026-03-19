@@ -1,3 +1,7 @@
+using System.Collections.Generic;
+using System.Linq;
+using Assets.ScriptableObjects;
+using Assets.ScriptableObjects.BuildingConfig;
 using Assets.Scripts.Enum;
 using Assets.Scripts.Factories;
 using UnityEngine;
@@ -10,13 +14,17 @@ namespace Assets.Scripts.Buildings
     {
         private readonly IBuildingFactory _buildingFactory;
         private readonly Tilemap _groundTilemap;
-
+        private WorldGridConfig _worldGridConfig;
+        private readonly BuildingConfig[] _configs;
+        public readonly Dictionary<BuildingType, BuildingConfig> _configsDict;
+        
         [Inject]
-        public BuildingManager(IBuildingFactory buildingFactory, [Inject(Id = "Ground")] Tilemap groundTilemap)
+        public BuildingManager(IBuildingFactory buildingFactory, [Inject(Id = "Ground")] Tilemap groundTilemap, WorldGridConfig worldGridConfig, BuildingConfig[] configs)
         {
             _buildingFactory = buildingFactory;
             _groundTilemap = groundTilemap;
-            /*PlaceBuilding(BuildingType.Camp, Vector3.one);*/
+            _worldGridConfig = worldGridConfig;
+            _configsDict = configs.ToDictionary(x => x.BuildingType, x => x);
         }
 
         public Vector3 GetTilePosition(Vector3 worldPosition)
@@ -40,7 +48,9 @@ namespace Assets.Scripts.Buildings
             }
 
             Vector3 tilePosition = GetTilePosition(worldPosition);
-            _buildingFactory.Create(type, tilePosition);
+            float topY = tilePosition.y + _groundTilemap.cellSize.y/2f;
+            Vector3 topPosition = new Vector3(worldPosition.x, topY, 0);
+            _buildingFactory.Create(type, topPosition);
         }
     }
 }

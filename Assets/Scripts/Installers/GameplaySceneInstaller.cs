@@ -6,6 +6,7 @@ using Assets.Scripts.Enemy;
 using Assets.Scripts.Factories;
 using Assets.Scripts.Interfaces;
 using Assets.Scripts.Wallet;
+using Assets.Scripts.World;
 using Unity.Cinemachine;
 using UnityEngine;
 using UnityEngine.Tilemaps;
@@ -28,6 +29,9 @@ namespace Assets.Installer
         [Header("Buildings")]
         [SerializeField] private BuildingConfig[] _buildingConfigs;
         [SerializeField] private Tilemap _groundTilemap;
+        
+        [Header("World")]
+        [SerializeField] private WorldGridConfig _worldGridConfig;
 
         public override void InstallBindings()
         {
@@ -35,6 +39,7 @@ namespace Assets.Installer
             BindWallet();
             BindPlayer();
             BindEnemySystem();
+            WorldGenerate();
             BindBuildingSystem();
             Container.Bind<IInteractableService>().To<InteractableService>().AsSingle().NonLazy();
         }
@@ -64,7 +69,13 @@ namespace Assets.Installer
         {
             Container.Bind<IBuildingFactory>().To<BuildingFactory>().AsSingle().WithArguments(_buildingConfigs);
             Container.Bind<Tilemap>().WithId("Ground").FromInstance(_groundTilemap);
-            Container.Bind<BuildingManager>().AsSingle();
+            Container.Bind<BuildingManager>().AsSingle().WithArguments(_buildingConfigs).NonLazy();
+        }
+        
+        private void WorldGenerate()
+        {
+            Container.Bind<WorldGridConfig>().FromInstance(_worldGridConfig);
+            Container.Bind<WorldGenerateController>().AsSingle().NonLazy();
         }
     }
 }

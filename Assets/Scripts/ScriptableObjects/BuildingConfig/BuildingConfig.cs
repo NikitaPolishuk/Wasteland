@@ -9,6 +9,7 @@ namespace Assets.ScriptableObjects.BuildingConfig
         public BuildingType BuildingType;
         public GameObject BuildingPrefab;
         public BuildingLevelConfig[] Levels;
+        public int Area;
     }
 
     [System.Serializable]
