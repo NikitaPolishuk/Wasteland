@@ -1,0 +1,17 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: c533ff1500b3b0845a5b2119ebca25c6, type: 3}
+  m_Name: EnvironmentTreeConfig
+  m_EditorClassIdentifier: Assembly-CSharp::Assets.ScriptableObjects.EnvironmentConfig
+  EnvironmentType: 0
+  EnvironmentPrefab: {fileID: 4619483350925208760, guid: 10284ec5942698f48be8e9adb889ef42, type: 3}
+  Area: 1

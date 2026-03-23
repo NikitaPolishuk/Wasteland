@@ -32,6 +32,7 @@ namespace Assets.Installer
         
         [Header("World")]
         [SerializeField] private WorldGridConfig _worldGridConfig;
+        [SerializeField] private EnvironmentConfig[] _environmentConfigs;
 
         public override void InstallBindings()
         {
@@ -74,6 +75,8 @@ namespace Assets.Installer
         
         private void WorldGenerate()
         {
+            Container.Bind<IEnvironmentFactory>().To<EnvironmentFactory>().AsSingle().WithArguments(_environmentConfigs);
+            Container.Bind<EnvironmentManager>().AsSingle().WithArguments(_environmentConfigs).NonLazy();
             Container.Bind<WorldGridConfig>().FromInstance(_worldGridConfig);
             Container.Bind<WorldGenerateController>().AsSingle().NonLazy();
         }

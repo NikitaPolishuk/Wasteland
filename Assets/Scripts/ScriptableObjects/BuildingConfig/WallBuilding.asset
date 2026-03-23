@@ -19,7 +19,8 @@ MonoBehaviour:
     AppearancePrefab: {fileID: 7261442642207094808, guid: 3aa4ef1011f175c44b3b05dc5c13457d, type: 3}
     UpgradeCost: 0
     MaxHp: 0
-  - Level: 2
+  - Level: 1
     AppearancePrefab: {fileID: 6716875822026441304, guid: 72dbd6f9abd31ef4981f13fbc8c71622, type: 3}
     UpgradeCost: 5
     MaxHp: 0
+  Area: 5

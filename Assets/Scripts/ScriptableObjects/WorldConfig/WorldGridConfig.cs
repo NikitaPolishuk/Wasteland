@@ -12,16 +12,7 @@ namespace Assets.ScriptableObjects
         public int Width = 50;
         public int GroundHeight = 4;
         public int GroundY = 0;
-
-        [Header("Generate Building Rule")] 
-        public GenerateBuildingRule[] _generateBuildingRules;
     }
-
-    [Serializable]
-    public struct GenerateBuildingRule
-    {
-        private BuildingConfig.BuildingConfig BuildingConfig;
-        private Vector2 ConstructionRange;
-    }
+    
     
 }

@@ -13,6 +13,6 @@ MonoBehaviour:
   m_Name: WorldGridConfig
   m_EditorClassIdentifier: Assembly-CSharp::Assets.ScriptableObjects.WorldGridConfig
   GroundRuleTile: {fileID: 11400000, guid: 4334269a04e0f4543b47a6457d191765, type: 2}
-  Width: 200
+  Width: 300
   GroundHeight: 2
-  GroundY: -2
+  GroundY: -1

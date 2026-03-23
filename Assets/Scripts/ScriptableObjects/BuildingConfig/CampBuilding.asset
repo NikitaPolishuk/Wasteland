@@ -23,3 +23,4 @@ MonoBehaviour:
     AppearancePrefab: {fileID: 2402836409929433745, guid: 395ab3a5bbf1a1042bd2a3cef0ec0059, type: 3}
     UpgradeCost: 5
     MaxHp: 0
+  Area: 11
