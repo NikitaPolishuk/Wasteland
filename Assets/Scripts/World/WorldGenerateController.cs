@@ -77,7 +77,7 @@ namespace Assets.Scripts.World
             var center = _worldGridConfig.Width / 2;
             if (IsAreaFree(center, _buildingManager.ConfigsDict[BuildingType.Camp].Area))
             {
-                _buildingManager.PlaceBuilding(BuildingType.Camp, _tileData[center].Position);
+                _buildingManager.Place(BuildingType.Camp, _tileData[center].Position);
                 OccupyAreaTile(center, _buildingManager.ConfigsDict[BuildingType.Camp].Area);
             }
 
@@ -86,69 +86,70 @@ namespace Assets.Scripts.World
             PlaceOnFreeTile(BuildingType.Wall, true);
             PlaceOnFreeTile(BuildingType.Wall, false);
         }
-        
-        private GameObject PlaceOnFreeTile<T>(T objectType, bool side)
-        {
-            if(!FindFreeTile(side,  out var freeTile)) return null;
-            
-            if(objectType is BuildingType buildingType)
-            {
-                OccupyAreaTile(freeTile.Index, _buildingManager.ConfigsDict[buildingType].Area);
-                return _buildingManager.PlaceBuilding(buildingType, freeTile.Position);
-            }
-            
-            if(objectType is EnvironmentType environmentType)
-            {
-                OccupyAreaTile(freeTile.Index, _environmentManager.ConfigsDict[environmentType].Area);
-                return _environmentManager.PlaceEnvironment(environmentType, freeTile.Position);
-            }
 
-            return null;
+        private GameObject PlaceOnFreeTile(BuildingType buildingType, bool side)
+        {
+            if (!FindFreeTile(side, out var freeTile)) return null;
+
+            OccupyAreaTile(freeTile.Index, _buildingManager.GetConfig(buildingType).Area);
+            return _buildingManager.Place(buildingType, freeTile.Position);
+        }
+
+        private GameObject PlaceOnFreeTile(EnvironmentType environmentType, bool side, Vector3? scale = null)
+        {
+            if (!FindFreeTile(side, out var freeTile)) return null;
+
+            OccupyAreaTile(freeTile.Index, _environmentManager.GetConfig(environmentType).Area);
+            return scale != null
+                ? _environmentManager.Place(environmentType, freeTile.Position, scale.Value)
+                : _environmentManager.Place(environmentType, freeTile.Position);
         }
 
         private void ForestGeneration(bool side)
         {
-            for (int  i = 0; i < Random.Range(4, 15); i++)
+            for (int i = 0; i < Random.Range(4, 15); i++)
             {
                 var treeType = Random.Range(1, 3) == 1 ? EnvironmentType.Tree2 : EnvironmentType.Tree1;
-                var tree = PlaceOnFreeTile(treeType, side);
+                var scale = Random.Range(1.4f, 2f);
+                var tree = PlaceOnFreeTile(treeType, side, new Vector3(scale, scale, scale));
                 if (tree == null) break;
                 tree.GetComponent<TreeController>().BackTree(i % 2 == 0);
             }
         }
-        
+
         private void LeaGeneration(bool side)
         {
-            for (int  i = 0; i < Random.Range(10, 20); i++)
+            for (int i = 0; i < Random.Range(10, 20); i++)
             {
-                if(!FindFreeTile(side,  out var freeTile)) break;
+                if (!FindFreeTile(side, out var freeTile)) break;
                 OccupyAreaTile(freeTile.Index, 1, false);
             }
         }
-        
+
         private void GrassGeneration()
         {
-            for (int  i = 0; i < _tileData.Count; i++)
-            { 
+            for (int i = 0; i < _tileData.Count; i++)
+            {
                 var treeType = Random.Range(1, 3) == 1 ? EnvironmentType.Grass1 : EnvironmentType.Grass2;
                 if (!_tileData[i].Environment && Random.Range(1, 3) > 1)
                 {
-                    _environmentManager.PlaceEnvironment(treeType, _tileData[i].Position);
+                    var scale = Random.Range(1.4f, 2f);
+                    _environmentManager.Place(treeType, _tileData[i].Position, new Vector3(scale, scale, scale));
                     OccupyAreaTile(_tileData[i].Index, 1, true);
                 }
             }
         }
-        
+
         private void RockGeneration()
         {
-            for (int  i = 0; i < _tileData.Count; i++)
-            { 
+            for (int i = 0; i < _tileData.Count; i++)
+            {
                 var treeType = Random.Range(1, 3) == 1 ? EnvironmentType.Rock2 : EnvironmentType.Rock1;
                 if (!_tileData[i].Environment)
                 {
                     if (i + 1 < _tileData.Count && i - 1 > 0 && !_tileData[i + 1].Environment && !_tileData[i - 1].Environment)
                     {
-                        _environmentManager.PlaceEnvironment(treeType, _tileData[i].Position);
+                        _environmentManager.Place(treeType, _tileData[i].Position);
                         OccupyAreaTile(_tileData[i].Index, 1, true);
                     }
                 }
@@ -165,9 +166,9 @@ namespace Assets.Scripts.World
 
             for (int i = start; left ? i >= end : i <= end; i += step)
             {
-                if (!_tileData[i-1].Busy)
+                if (!_tileData[i - 1].Busy)
                 {
-                    tileData = _tileData[i-1];
+                    tileData = _tileData[i - 1];
                     return true;
                 }
             }
@@ -179,13 +180,13 @@ namespace Assets.Scripts.World
         {
             if (size == 1)
             {
-                var data = _tileData[centerIndex ];
+                var data = _tileData[centerIndex];
                 data.Busy = true;
                 if (environment) data.Environment = true;
                 _tileData[centerIndex] = data;
                 return;
             }
-            
+
             int halfSize = size / 2;
 
             for (int i = centerIndex - halfSize; i < centerIndex + halfSize; i++)

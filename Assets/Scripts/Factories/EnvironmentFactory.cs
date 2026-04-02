@@ -24,15 +24,18 @@ namespace Assets.Scripts.Factories
             if (_configsDict.TryGetValue(type, out var config))
             {
                 var environment = _container.InstantiatePrefab(config.EnvironmentPrefab, position, Quaternion.identity, null);
-
-                if (type == EnvironmentType.Tree1 || type == EnvironmentType.Tree2 ) environment.transform.localScale *= Random.Range(1f, 1.7f);
-                if (type == EnvironmentType.Grass1 || type == EnvironmentType.Grass2 ) environment.transform.localScale *= Random.Range(1.2f, 1.6f);
-                
                 return environment;
             }
 
             Debug.LogWarning($"environment {type} not found!");
             return null;
+        }
+        
+        public GameObject Create(EnvironmentType type, Vector2 position, Vector3 scale)
+        {
+            var environment = Create(type, position);
+            if (environment != null) environment.transform.localScale = scale;
+            return environment;
         }
     }
 }

@@ -6,5 +6,6 @@ namespace Assets.Scripts.Factories
     public interface IEnvironmentFactory 
     {
         GameObject Create(EnvironmentType type, Vector2 position);
+        GameObject Create(EnvironmentType type, Vector2 position, Vector3 scale);
     }
 }

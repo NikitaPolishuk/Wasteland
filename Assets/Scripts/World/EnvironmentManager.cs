@@ -1,5 +1,3 @@
-using System.Collections.Generic;
-using System.Linq;
 using Assets.ScriptableObjects;
 using Assets.Scripts.Enum;
 using Assets.Scripts.Factories;
@@ -9,45 +7,43 @@ using Zenject;
 
 namespace Assets.Scripts.World
 {
-    public class EnvironmentManager
+    public class EnvironmentManager : PlaceManager<EnvironmentConfig, EnvironmentType>
     {
         private readonly IEnvironmentFactory _environmentFactory;
-        private readonly Tilemap _groundTilemap;
-        private readonly EnvironmentConfig[] _configs;
-        public readonly Dictionary<EnvironmentType, EnvironmentConfig > ConfigsDict;
-        
+
         [Inject]
-        public EnvironmentManager(IEnvironmentFactory environmentFactory, [Inject(Id = "Ground")] Tilemap groundTilemap, EnvironmentConfig[] configs)
+        public EnvironmentManager(IEnvironmentFactory environmentFactory, [Inject(Id = "Ground")] Tilemap groundTilemap, EnvironmentConfig[] configs) 
+            : base(groundTilemap, configs)
         {
             _environmentFactory = environmentFactory;
-            _groundTilemap = groundTilemap;
-            ConfigsDict = configs.ToDictionary(x => x.EnvironmentType, x => x);
         }
 
-        public Vector3 GetTilePosition(Vector3 worldPosition)
+        protected override EnvironmentType GetTypeKey(EnvironmentConfig config) => config.EnvironmentType;
+
+        public override GameObject Place(EnvironmentType type, Vector3 worldPosition)
         {
-            Vector3Int cellPos = _groundTilemap.WorldToCell(worldPosition);
-            return _groundTilemap.GetCellCenterWorld(cellPos);
+            return PlaceInternal(type, worldPosition, null);
         }
 
-        public bool IsTileValid(Vector3 worldPosition)
+        public GameObject Place(EnvironmentType type, Vector3 worldPosition, Vector3 scale)
         {
-            Vector3Int cellPos = _groundTilemap.WorldToCell(worldPosition);
-            return _groundTilemap.HasTile(cellPos);
+            return PlaceInternal(type, worldPosition, scale);
         }
 
-        public GameObject PlaceEnvironment(EnvironmentType type, Vector3 worldPosition)
+        private GameObject PlaceInternal(EnvironmentType type, Vector3 worldPosition, Vector3? scale)
         {
             if (!IsTileValid(worldPosition))
             {
-                Debug.LogWarning("Cannot place building: no tile at position");
+                Debug.LogWarning("Cannot place object: no tile at position");
                 return null;
             }
 
-            Vector3 tilePosition = GetTilePosition(worldPosition);
-            float topY = tilePosition.y + _groundTilemap.cellSize.y / 2f;
-            Vector3 topPosition = new Vector3(worldPosition.x, topY, 0);
-            return _environmentFactory.Create(type, topPosition);
+            Vector3 topPosition = GetTopPosition(worldPosition);
+            return scale.HasValue
+                ? _environmentFactory.Create(type, topPosition, scale.Value)
+                : _environmentFactory.Create(type, topPosition);
         }
+
+        public override EnvironmentConfig GetConfig(EnvironmentType type) => ConfigsDict[type];
     }
 }
