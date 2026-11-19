@@ -47,6 +47,7 @@ namespace Assets.Scripts.Input
             _inputActions.BaseMap.Move.performed -= OnMovePerformed;
             _inputActions.BaseMap.Move.canceled -= OnMoveCanceled;
             _inputActions.BaseMap.Interacteble.performed -= OnInteractionHandler;
+            _inputActions.BaseMap.Disable();
         }
     }
 }

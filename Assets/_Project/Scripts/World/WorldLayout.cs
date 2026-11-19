@@ -75,10 +75,21 @@ namespace Assets.Scripts.World
             }
         }
 
+        public void ValidateBuildingCatalog(BuildingConfig[] configs)
+        {
+            HashSet<BuildingConfig> available = new HashSet<BuildingConfig>(configs);
+            foreach (WorldBuildingPlacement building in Buildings)
+            {
+                if (building.Config.IsEditorManaged && available.Contains(building.Config) == false)
+                    Errors.Add($"Building configuration {building.Config.name} is not available in the building catalog.");
+            }
+        }
+
         private bool ValidateBuilding(BuildingConfig config, string label, bool camp)
         {
             if (config == null) { Errors.Add($"{label}: building configuration is missing."); return false; }
             bool valid = true;
+            if (config.IsAvailableInGame == false) { Errors.Add($"{label}: building configuration is incomplete."); valid = false; }
             if ((config.BuildingType == BuildingType.Camp) != camp) { Errors.Add($"{label}: invalid building type."); valid = false; }
             if (config.Area <= 0) { Errors.Add($"{label}: width must be positive."); valid = false; }
             if (config.BuildingPrefab == null) { Errors.Add($"{label}: prefab is missing."); valid = false; }

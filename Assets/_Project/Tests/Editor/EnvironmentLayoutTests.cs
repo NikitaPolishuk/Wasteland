@@ -18,7 +18,7 @@ public class EnvironmentLayoutTests
         _worldType = Type.GetType("Assets.ScriptableObjects.WorldGridConfig, Assembly-CSharp", true);
         _worldLayoutType = Type.GetType("Assets.Scripts.World.WorldLayout, Assembly-CSharp", true);
         _environmentType = Type.GetType("Assets.Scripts.World.EnvironmentLayout, Assembly-CSharp", true);
-        UnityEngine.Object asset = AssetDatabase.LoadAssetAtPath("Assets/_Project/Scripts/ScriptableObjects/WorldConfig/WorldGridConfig.asset", _worldType);
+        UnityEngine.Object asset = AssetDatabase.LoadAssetAtPath("Assets/_Project/Scripts/ScriptableObjects/WorldConfig/ExampleWorldGeneration.asset", _worldType);
         _world = UnityEngine.Object.Instantiate(asset) as ScriptableObject;
     }
 

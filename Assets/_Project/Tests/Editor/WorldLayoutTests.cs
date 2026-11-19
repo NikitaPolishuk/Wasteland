@@ -6,6 +6,60 @@ using UnityEngine;
 
 public class WorldLayoutTests
 {
+    [TestCase(false)]
+    [TestCase(true)]
+    public void RejectsWorldBuildingExcludedFromCatalogByConflict(bool duplicateName)
+    {
+        Type worldType = Type.GetType("Assets.ScriptableObjects.WorldGridConfig, Assembly-CSharp", true);
+        Type layoutType = Type.GetType("Assets.Scripts.World.WorldLayout, Assembly-CSharp", true);
+        Type buildingType = Type.GetType("Assets.ScriptableObjects.BuildingConfig.BuildingConfig, Assembly-CSharp", true);
+        Type entryType = Type.GetType("Assets.ScriptableObjects.WorldBuildingEntry, Assembly-CSharp", true);
+        Type catalogType = Type.GetType("Assets.Scripts.Buildings.BuildingCatalog, Assembly-CSharp", true);
+        UnityEngine.Object originalWall = AssetDatabase.LoadMainAssetAtPath("Assets/_Project/Scripts/ScriptableObjects/BuildingConfig/WallBuilding.asset");
+        UnityEngine.Object originalCamp = AssetDatabase.LoadMainAssetAtPath("Assets/_Project/Scripts/ScriptableObjects/BuildingConfig/CampBuilding.asset");
+        ScriptableObject world = ScriptableObject.CreateInstance(worldType);
+        UnityEngine.Object wall = UnityEngine.Object.Instantiate(originalWall);
+        UnityEngine.Object conflict = UnityEngine.Object.Instantiate(duplicateName ? originalCamp : originalWall);
+        try
+        {
+            SerializedObject wallData = new SerializedObject(wall);
+            wallData.FindProperty("_isEditorManaged").boolValue = true;
+            SerializedProperty levels = wallData.FindProperty("Levels");
+            for (int index = 0; index < levels.arraySize; index++)
+                levels.GetArrayElementAtIndex(index).FindPropertyRelative("MaxHp").intValue = 20;
+            wallData.ApplyModifiedPropertiesWithoutUndo();
+            buildingType.GetProperty("DisplayName").SetValue(wall, "Shared name");
+            if (duplicateName) buildingType.GetProperty("DisplayName").SetValue(conflict, "Shared name");
+            Assert.That(buildingType.GetProperty("IsAvailableInGame").GetValue(wall), Is.True);
+
+            worldType.GetField("Width").SetValue(world, 30);
+            worldType.GetField("GroundHeight").SetValue(world, 1);
+            worldType.GetField("Camp").SetValue(world, originalCamp);
+            object entry = Activator.CreateInstance(entryType);
+            entryType.GetField("Config").SetValue(entry, wall);
+            ((IList)worldType.GetField("LeftBuildings").GetValue(world)).Add(entry);
+            object layout = layoutType.GetMethod("Calculate").Invoke(null, new object[] { world, false });
+            IList buildings = (IList)layoutType.GetField("Buildings").GetValue(layout);
+            Assert.That(buildings.Count, Is.EqualTo(2));
+
+            Array candidates = Array.CreateInstance(buildingType, 2);
+            candidates.SetValue(wall, 0);
+            candidates.SetValue(conflict, 1);
+            Array available = (Array)catalogType.GetMethod("GetAvailableConfigs").Invoke(null, new object[] { candidates });
+            Assert.That(available, Has.No.Member(wall));
+            layoutType.GetMethod("ValidateBuildingCatalog").Invoke(layout, new object[] { available });
+            IList errors = (IList)layoutType.GetField("Errors").GetValue(layout);
+            Assert.That(errors, Has.Some.Contains("is not available in the building catalog"));
+            Assert.That(layoutType.GetProperty("IsValid").GetValue(layout), Is.False);
+        }
+        finally
+        {
+            UnityEngine.Object.DestroyImmediate(world);
+            UnityEngine.Object.DestroyImmediate(wall);
+            UnityEngine.Object.DestroyImmediate(conflict);
+        }
+    }
+
     [Test]
     public void PlayerColliderOverlapWithAdjacentBuildingIsReported()
     {

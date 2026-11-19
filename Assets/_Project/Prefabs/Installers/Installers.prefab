@@ -89,7 +89,7 @@ MonoBehaviour:
   - {fileID: 11400000, guid: 7f8da5eaaa6b30940b05df040650eb96, type: 2}
   - {fileID: 11400000, guid: 318235caf4772a74db03de8e529731c8, type: 2}
   _groundTilemap: {fileID: 0}
-  _worldGridConfig: {fileID: 11400000, guid: 7ae86c7455a3e5541bec59f410ecd238, type: 2}
+  _worldGridConfig: {fileID: 11400000, guid: 50ac5f7cf6da4921afd074a1e2443ee1, type: 2}
 --- !u!1 &3041222843798492020
 GameObject:
   m_ObjectHideFlags: 0

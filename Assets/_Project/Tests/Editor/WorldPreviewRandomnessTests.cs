@@ -12,7 +12,7 @@ public class WorldPreviewRandomnessTests
         Type configType = Type.GetType("Assets.ScriptableObjects.WorldGridConfig, Assembly-CSharp", true);
         Type worldType = Type.GetType("Assets.Scripts.World.WorldLayout, Assembly-CSharp", true);
         Type environmentType = Type.GetType("Assets.Scripts.World.EnvironmentLayout, Assembly-CSharp", true);
-        UnityEngine.Object asset = AssetDatabase.LoadAssetAtPath("Assets/_Project/Scripts/ScriptableObjects/WorldConfig/WorldGridConfig.asset", configType);
+        UnityEngine.Object asset = AssetDatabase.LoadAssetAtPath("Assets/_Project/Scripts/ScriptableObjects/WorldConfig/ExampleWorldGeneration.asset", configType);
         ScriptableObject config = UnityEngine.Object.Instantiate(asset) as ScriptableObject;
         try
         {

@@ -38,6 +38,10 @@ namespace Assets.Scripts.Buildings
             return _buildingFactory.Create(config, surfacePosition);
         }
 
-        public override BuildingConfig GetConfig(BuildingType type) => ConfigsDict[type];
+        public override BuildingConfig GetConfig(BuildingType type)
+        {
+            ConfigsDict.TryGetValue(type, out BuildingConfig config);
+            return config;
+        }
     }
 }

@@ -36,10 +36,12 @@ namespace Assets.Installer
         [SerializeField] private EnvironmentConfig[] _environmentConfigs;
 
         private WorldLayout _layout;
+        private BuildingConfig[] _availableBuildingConfigs;
         private Vector3 _spawnPosition;
 
         public override void InstallBindings()
         {
+            _availableBuildingConfigs = BuildingCatalog.Load(_buildingConfigs);
             ValidateWorld();
             Application.targetFrameRate = 60;
             Container.Bind<WorldLayout>().FromInstance(_layout);
@@ -56,6 +58,7 @@ namespace Assets.Installer
         private void ValidateWorld()
         {
             _layout = WorldLayout.Calculate(_worldGridConfig);
+            _layout.ValidateBuildingCatalog(_availableBuildingConfigs);
             if (_groundTilemap == null) _layout.Errors.Add("Ground Tilemap is missing.");
             if (_characterController == null) _layout.Errors.Add("Player prefab is missing.");
             Camera camera = Camera.main;
@@ -109,9 +112,9 @@ namespace Assets.Installer
 
         private void BindBuildingSystem()
         {
-            Container.Bind<IBuildingFactory>().To<BuildingFactory>().AsSingle().WithArguments(_buildingConfigs);
+            Container.Bind<IBuildingFactory>().To<BuildingFactory>().AsSingle().WithArguments(_availableBuildingConfigs);
             Container.Bind<Tilemap>().WithId("Ground").FromInstance(_groundTilemap);
-            Container.Bind<BuildingManager>().AsSingle().WithArguments(_buildingConfigs).NonLazy();
+            Container.Bind<BuildingManager>().AsSingle().WithArguments(_availableBuildingConfigs).NonLazy();
         }
         
         private void WorldGenerate()

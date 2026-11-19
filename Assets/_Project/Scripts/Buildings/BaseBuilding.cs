@@ -20,12 +20,16 @@ namespace Assets.Scripts.Buildings
         private BuildingUpgrade _upgrade;
         private GameObject _currentAppearance;
 
+        protected BuildingConfig Config { get; private set; }
+
         public int Level => _upgrade == null ? -1 : _upgrade.Level;
         public int CurrentHp => _healthSystem.CurrentHp;
         public int MaxHp => _healthSystem.MaxHp;
         public bool IsAlive => _healthSystem.IsAlive;
         public Transform Transform => transform;
         public bool CanInteract => _upgrade != null && _upgrade.CanUpgrade;
+        public bool HasBuildPrice => _buildPrice != null;
+        public bool HasHealthSystem => _healthSystem != null;
 
         [Inject]
         private void Init(IInteractableService interactableService, IResourceService referenceService)
@@ -36,6 +40,7 @@ namespace Assets.Scripts.Buildings
 
         public void Initialize(BuildingConfig config)
         {
+            Config = config;
             _levels = config.Levels.ToDictionary(entry => entry.Level, entry => entry);
             int maxLevel = _levels.Keys.Max();
             int[] costs = Enumerable.Repeat(-1, maxLevel + 1).ToArray();
@@ -75,7 +80,10 @@ namespace Assets.Scripts.Buildings
         public void Interactable()
         {
             if (_upgrade == null || _upgrade.TryUpgrade() == false) return;
+
             SetAppearance(Level);
+            _healthSystem?.Initialize(_levels[Level].MaxHp);
+
             if (CanInteract) _buildPrice.SetPrice(_upgrade.NextCost);
             else
             {
