@@ -1,3 +1,4 @@
+using Assets.ScriptableObjects;
 using Assets.Scripts.Enum;
 using Assets.Scripts.Interfaces;
 using System;
@@ -11,13 +12,13 @@ namespace Assets.Scripts.Wallet
         public Action<ResourceType, int> ResourceChange { get; set; }
 
         [Inject]
-        public PlayerResourceService(ResourceWallet wallet)
+        public PlayerResourceService(ResourceWallet wallet, PlayerConfig playerConfig)
         {
             _wallet = wallet;
 
             var gold = new GoldResource();
             _wallet.RegisterResource(gold);
-            Add(ResourceType.Gold, 30);
+            Add(ResourceType.Gold, playerConfig.StartingGold);
         }
 
         public void Add(ResourceType type, int amount)
