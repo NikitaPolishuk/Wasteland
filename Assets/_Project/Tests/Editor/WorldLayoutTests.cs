@@ -93,4 +93,3 @@ public class WorldLayoutTests
         UnityEngine.Object.DestroyImmediate(world); UnityEngine.Object.DestroyImmediate(camp); UnityEngine.Object.DestroyImmediate(wall); UnityEngine.Object.DestroyImmediate(prefab);
     }
 }
-

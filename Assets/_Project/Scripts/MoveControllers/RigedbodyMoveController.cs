@@ -44,4 +44,3 @@ namespace Assets.Scripts.MoveControllers
         }
     }
 }
-

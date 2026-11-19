@@ -81,9 +81,3 @@ public class PlayerMovementTests
         Assert.That(body.linearVelocity.x, Is.EqualTo(0).Within(0.001f));
         UnityEngine.Object.Destroy(player);
     }}
-
-
-
-
-
-
