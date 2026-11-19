@@ -13,3 +13,4 @@ MonoBehaviour:
   m_Name: PlayerConfig
   m_EditorClassIdentifier: 
   <Speed>k__BackingField: 4
+  <StartingGold>k__BackingField: 30

@@ -1,0 +1,5 @@
+{
+  "name": "Wasteland.Economy.Tests",
+  "optionalUnityReferences": ["TestAssemblies"],
+  "includePlatforms": ["Editor"]
+}
