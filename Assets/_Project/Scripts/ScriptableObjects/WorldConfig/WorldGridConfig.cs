@@ -48,6 +48,10 @@ namespace Assets.ScriptableObjects
         public int OpenMaxLength = 30;
         public float TreeScaleMin = 0.8f;
         public float TreeScaleMax = 1.2f;
+        public float RockScaleMin = 1f;
+        public float RockScaleMax = 1f;
+        public float GrassScaleMin = 1f;
+        public float GrassScaleMax = 1f;
         [Range(0, 1)] public float TreeDensity = 0.2f;
         [Range(0, 1)] public float ForestRockDensity = 0.05f;
         [Range(0, 1)] public float OpenRockDensity = 0.1f;

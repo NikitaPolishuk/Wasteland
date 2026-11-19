@@ -5,6 +5,7 @@ using Assets.Installer;
 using Assets.Scripts.World;
 using UnityEditor;
 using UnityEngine;
+using UnityEngine.SceneManagement;
 using UnityEngine.Tilemaps;
 
 public class WorldSettingsWindow : EditorWindow
@@ -15,6 +16,7 @@ public class WorldSettingsWindow : EditorWindow
     private Vector2 _scroll;
     private int _previewSeed;
     private System.Random _seedSource;
+    private int _sceneHandle;
 
     [MenuItem("Wasteland/World Settings")]
     public static void Open() => GetWindow<WorldSettingsWindow>("World Settings");
@@ -23,21 +25,33 @@ public class WorldSettingsWindow : EditorWindow
     {
         _seedSource = new System.Random();
         _previewSeed = _seedSource.Next();
+        LoadSceneConfiguration();
     }
 
     private void OnGUI()
     {
-        _config = (WorldGridConfig)EditorGUILayout.ObjectField("World configuration", _config, typeof(WorldGridConfig), false);
+        Scene activeScene = SceneManager.GetActiveScene();
+        if (_sceneHandle != activeScene.handle) LoadSceneConfiguration();
+
+        GameplaySceneInstaller installer = FindSceneInstaller(activeScene, out bool multipleInstallers);
+        EditorGUI.BeginDisabledGroup(EditorApplication.isPlayingOrWillChangePlaymode);
+        EditorGUI.BeginChangeCheck();
+        WorldGridConfig selectedConfig = (WorldGridConfig)EditorGUILayout.ObjectField("World configuration", _config, typeof(WorldGridConfig), false);
+        if (EditorGUI.EndChangeCheck()) SetSceneConfiguration(installer, multipleInstallers, selectedConfig);
         if (GUILayout.Button("Create configuration"))
         {
             string path = EditorUtility.SaveFilePanelInProject("Create world configuration", "WorldGridConfig", "asset", "Choose a location");
             if (string.IsNullOrEmpty(path) == false)
             {
-                _config = CreateInstance<WorldGridConfig>();
-                AssetDatabase.CreateAsset(_config, path);
+                WorldGridConfig newConfig = CreateInstance<WorldGridConfig>();
+                AssetDatabase.CreateAsset(newConfig, path);
                 AssetDatabase.SaveAssets();
+                SetSceneConfiguration(installer, multipleInstallers, newConfig);
             }
         }
+        EditorGUI.EndDisabledGroup();
+        if (installer == null || multipleInstallers)
+            EditorGUILayout.HelpBox(multipleInstallers ? "The active scene has multiple gameplay installers. Select a scene with exactly one installer to assign the configuration." : "The active scene has no gameplay installer. Open the gameplay scene to assign the configuration.", MessageType.Warning);
         if (_config == null) return;
         _scroll = EditorGUILayout.BeginScrollView(_scroll);
         SerializedObject data = new SerializedObject(_config);
@@ -56,7 +70,6 @@ public class WorldSettingsWindow : EditorWindow
         if (_config.Camp != null) EditorGUILayout.LabelField("Camp width", _config.Camp.Area.ToString());
         WorldLayout layout = WorldLayout.Calculate(_config);
         foreach (string error in layout.Errors) EditorGUILayout.HelpBox(error, MessageType.Error);
-        GameplaySceneInstaller installer = FindFirstObjectByType<GameplaySceneInstaller>();
         Camera camera = Camera.main;
         Tilemap tilemap = installer == null ? null : new SerializedObject(installer).FindProperty("_groundTilemap").objectReferenceValue as Tilemap;
         if (camera == null || tilemap == null)
@@ -74,6 +87,48 @@ public class WorldSettingsWindow : EditorWindow
             EditorGUILayout.HelpBox("Fix the errors above to display the preview.", MessageType.Warning);
         }
         EditorGUILayout.EndScrollView();
+    }
+
+    private void LoadSceneConfiguration()
+    {
+        Scene scene = SceneManager.GetActiveScene();
+        _sceneHandle = scene.handle;
+        GameplaySceneInstaller installer = FindSceneInstaller(scene, out bool multipleInstallers);
+        _config = installer == null || multipleInstallers ? null :
+            new SerializedObject(installer).FindProperty("_worldGridConfig").objectReferenceValue as WorldGridConfig;
+    }
+
+    private void SetSceneConfiguration(GameplaySceneInstaller installer, bool multipleInstallers, WorldGridConfig config)
+    {
+        _config = config;
+        if (installer == null || multipleInstallers) return;
+
+        SerializedObject serializedInstaller = new SerializedObject(installer);
+        SerializedProperty worldConfig = serializedInstaller.FindProperty("_worldGridConfig");
+        if (worldConfig.objectReferenceValue == config) return;
+        worldConfig.objectReferenceValue = config;
+        serializedInstaller.ApplyModifiedProperties();
+    }
+
+    private static GameplaySceneInstaller FindSceneInstaller(Scene scene, out bool multipleInstallers)
+    {
+        multipleInstallers = false;
+        if (scene.IsValid() == false || scene.isLoaded == false) return null;
+
+        GameplaySceneInstaller found = null;
+        foreach (GameObject root in scene.GetRootGameObjects())
+        {
+            foreach (GameplaySceneInstaller installer in root.GetComponentsInChildren<GameplaySceneInstaller>(true))
+            {
+                if (found != null)
+                {
+                    multipleInstallers = true;
+                    return null;
+                }
+                found = installer;
+            }
+        }
+        return found;
     }
 
     private static void DrawPreview(WorldGridConfig config, WorldLayout layout, EnvironmentLayout environment)

@@ -40,7 +40,9 @@ namespace Assets.Scripts.World
         {
             if (config.ForestMinLength <= 0 || config.ForestMaxLength < config.ForestMinLength) errors.Add("Forest length range is invalid.");
             if (config.OpenMinLength <= 0 || config.OpenMaxLength < config.OpenMinLength) errors.Add("Open length range is invalid.");
-            if (float.IsNaN(config.TreeScaleMin) || float.IsInfinity(config.TreeScaleMin) || float.IsNaN(config.TreeScaleMax) || float.IsInfinity(config.TreeScaleMax) || config.TreeScaleMin <= 0 || config.TreeScaleMax < config.TreeScaleMin) errors.Add("Tree scale range is invalid.");
+            ValidateScaleRange("Tree", config.TreeScaleMin, config.TreeScaleMax, errors);
+            ValidateScaleRange("Rock", config.RockScaleMin, config.RockScaleMax, errors);
+            ValidateScaleRange("Grass", config.GrassScaleMin, config.GrassScaleMax, errors);
             ValidateVariants("Trees", config.Trees, config.TreeDensity, errors);
             ValidateVariants("Rocks", config.Rocks, Math.Max(config.ForestRockDensity, config.OpenRockDensity), errors);
             ValidateVariants("Grass", config.Grass, Math.Max(config.ForestGrassDensity, config.OpenGrassDensity), errors);
@@ -78,10 +80,16 @@ namespace Assets.Scripts.World
             for (int i = 1; i < buildings.Count; i++)
                 if (buildings[i - 1].End < buildings[i].Start) regions.Add(new EnvironmentSegment { Start = buildings[i - 1].End, End = buildings[i].Start });
             foreach (EnvironmentSegment region in regions)
-                result.Place(region, config.Rocks, region.IsForest ? config.ForestRockDensity : config.OpenRockDensity, new PlacementContext { Occupied = large, Other = grass, ProtectedCells = protectedCells }, random);
+                result.Place(region, config.Rocks, region.IsForest ? config.ForestRockDensity : config.OpenRockDensity, new PlacementContext { Occupied = large, Other = grass, ProtectedCells = protectedCells, MinScale = config.RockScaleMin, MaxScale = config.RockScaleMax }, random);
             foreach (EnvironmentSegment region in regions)
-                result.Place(region, config.Grass, region.IsForest ? config.ForestGrassDensity : config.OpenGrassDensity, new PlacementContext { Occupied = grass, ProtectedCells = protectedCells, Large = large, TreeCells = treeCells }, random);
+                result.Place(region, config.Grass, region.IsForest ? config.ForestGrassDensity : config.OpenGrassDensity, new PlacementContext { Occupied = grass, ProtectedCells = protectedCells, Large = large, TreeCells = treeCells, MinScale = config.GrassScaleMin, MaxScale = config.GrassScaleMax }, random);
             return result;
+        }
+
+        private static void ValidateScaleRange(string label, float minimum, float maximum, List<string> errors)
+        {
+            if (float.IsNaN(minimum) || float.IsInfinity(minimum) || float.IsNaN(maximum) || float.IsInfinity(maximum) || minimum <= 0 || maximum < minimum)
+                errors.Add($"{label} scale range is invalid.");
         }
 
         private static void ValidateDensity(string label, float value, List<string> errors)
