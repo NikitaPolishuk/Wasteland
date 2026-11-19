@@ -1,44 +1,24 @@
 using Assets.Scripts.Enum;
 using Assets.Scripts.Interfaces;
 using UnityEngine;
-using Zenject;
 
 namespace Assets.Scripts.Character
 {
     public class PlayerAnimationController : MonoBehaviour, IAnimator
     {
-        public AnimationStates State { get; private set; }
+        private const float MOVEMENT_EPSILON = 0.0001f;
+        private readonly int _isWalk = Animator.StringToHash("Walk");
         private Animator _animator;
-        private readonly int isWalk = Animator.StringToHash("Walk");
+        private Rigidbody2D _body;
+        private SpriteRenderer _spriteRenderer;
+        private float _previousX;
 
-        private IInput _input;
-
-        [Inject]
-        public void Construct(IInput input)
-        {
-            _input = input;
-            _input.OnMove += OnMove;
-
-            _animator = GetComponent<Animator>();
-        }
-
-        private void OnDestroy()
-        {
-            if (_input != null)
-                _input.OnMove -= OnMove;
-        }
+        public AnimationStates State { get; private set; }
 
         public void SetState(AnimationStates state)
         {
-            switch (state)
-            {
-                case AnimationStates.Idle:
-                    _animator.SetBool(isWalk, false);
-                    break;
-                case AnimationStates.Walk:
-                    _animator.SetBool(isWalk, true);
-                    break;
-            }
+            State = state;
+            _animator.SetBool(_isWalk, state == AnimationStates.Walk);
         }
 
         public void SetTrigger(string state)
@@ -51,9 +31,25 @@ namespace Assets.Scripts.Character
             _animator.SetBool(state, value);
         }
 
-        private void OnMove(Vector2 move)
+        private void Awake()
         {
-            SetState(move == Vector2.zero ? AnimationStates.Idle : AnimationStates.Walk);
+            _animator = GetComponent<Animator>();
+            _body = GetComponent<Rigidbody2D>();
+            _spriteRenderer = GetComponent<SpriteRenderer>();
+            _previousX = _body.position.x;
+        }
+
+        private void FixedUpdate()
+        {
+            float currentX = _body.position.x;
+            bool isMoving = Mathf.Abs(currentX - _previousX) > MOVEMENT_EPSILON;
+            if (isMoving && _spriteRenderer != null)
+            {
+                _spriteRenderer.flipX = currentX < _previousX;
+            }
+
+            SetState(isMoving ? AnimationStates.Walk : AnimationStates.Idle);
+            _previousX = currentX;
         }
     }
 }
