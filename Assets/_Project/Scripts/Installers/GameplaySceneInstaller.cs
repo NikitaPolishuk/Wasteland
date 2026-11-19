@@ -43,7 +43,7 @@ namespace Assets.Installer
             BindEnemySystem();
             WorldGenerate();
             BindBuildingSystem();
-            Container.Bind<IInteractableService>().To<InteractableService>().AsSingle().NonLazy();
+            Container.BindInterfacesAndSelfTo<InteractableService>().AsSingle().NonLazy();
         }
 
         private void BindPlayer()
@@ -87,4 +87,5 @@ namespace Assets.Installer
         }
     }
 }
+
 

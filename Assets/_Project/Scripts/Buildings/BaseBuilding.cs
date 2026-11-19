@@ -25,6 +25,7 @@ namespace Assets.Scripts.Buildings
         public int MaxHp => _healthSystem.MaxHp;
         public bool IsAlive => _healthSystem.IsAlive;
         public Transform Transform => transform;
+        public bool CanInteract => _levels != null && IsMaxLevel() == false;
 
         [Inject]
         private void Init(IInteractableService interactableService, IResourceService referenceService)
@@ -123,20 +124,25 @@ namespace Assets.Scripts.Buildings
             }
         }
 
-        private void PlayerTriggerCollider(bool value, Collider2D collision)
+        public void SetSelected(bool selected)
         {
-            if (!IsPlayerCollider(collision) || IsMaxLevel()) return;
-
-            if (value) _interactableService.Set(this);
-            else _interactableService.Clear(this);
-
-            _buildPrice.ActivePrice(value);
+            _buildPrice.ActivePrice(selected);
         }
 
-        private void OnTriggerEnter2D(Collider2D collision) => PlayerTriggerCollider(true, collision);
+        private void OnTriggerEnter2D(Collider2D collision)
+        {
+            if (IsPlayerCollider(collision)) _interactableService.Set(this);
+        }
 
-        private void OnTriggerExit2D(Collider2D collision) => PlayerTriggerCollider(false, collision);
+        private void OnTriggerExit2D(Collider2D collision)
+        {
+            if (IsPlayerCollider(collision)) _interactableService.Clear(this);
+        }
 
+        private void OnDisable()
+        {
+            _interactableService?.Clear(this);
+        }
         private bool IsMaxLevel() => Level == MaxLvl;
         private bool IsPlayerCollider(Collider2D collider) => collider.CompareTag(Constants.Constants.PLAYER_TAG);
     }
