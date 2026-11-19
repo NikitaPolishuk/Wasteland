@@ -20,6 +20,14 @@ namespace Assets.Scripts.Factories
             _configsDict = configs.ToDictionary(x => x.BuildingType, x => x);
         }
 
+        public GameObject Create(BuildingConfig config, Vector2 position)
+        {
+            GameObject building = _container.InstantiatePrefab(config.BuildingPrefab, position, Quaternion.identity, null);
+            Buildings.BaseBuilding component = building.GetComponent<Buildings.BaseBuilding>();
+            component?.Initialize(config);
+            return building;
+        }
+
         public GameObject Create(BuildingType type, Vector2 position)
         {
             if (_configsDict.TryGetValue(type, out var config))

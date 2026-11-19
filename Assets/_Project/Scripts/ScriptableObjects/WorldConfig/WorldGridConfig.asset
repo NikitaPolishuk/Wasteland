@@ -16,3 +16,19 @@ MonoBehaviour:
   Width: 300
   GroundHeight: 2
   GroundY: -1
+  Camp: {fileID: 11400000, guid: 7f8da5eaaa6b30940b05df040650eb96, type: 2}
+  CampOffset: 0
+  Requirements:
+  - Type: 1
+    Minimum: 4
+  LeftBuildings:
+  - Config: {fileID: 11400000, guid: 318235caf4772a74db03de8e529731c8, type: 2}
+    Gap: 0
+  - Config: {fileID: 11400000, guid: 318235caf4772a74db03de8e529731c8, type: 2}
+    Gap: 0
+  RightBuildings:
+  - Config: {fileID: 11400000, guid: 318235caf4772a74db03de8e529731c8, type: 2}
+    Gap: 0
+  - Config: {fileID: 11400000, guid: 318235caf4772a74db03de8e529731c8, type: 2}
+    Gap: 0
+  PlayerCell: 130

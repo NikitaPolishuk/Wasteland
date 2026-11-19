@@ -33,6 +33,11 @@ namespace Assets.Scripts.Buildings
             return _buildingFactory.Create(type, topPosition);
         }
 
+        public GameObject Place(BuildingConfig config, Vector3 surfacePosition)
+        {
+            return _buildingFactory.Create(config, surfacePosition);
+        }
+
         public override BuildingConfig GetConfig(BuildingType type) => ConfigsDict[type];
     }
 }
