@@ -17,15 +17,15 @@ namespace Assets.Scripts.Buildings
         private Dictionary<int, GameObject> _appearanceInstances;
         private IInteractableService _interactableService;
         private IResourceService _playerResourceService;
+        private BuildingUpgrade _upgrade;
         private GameObject _currentAppearance;
 
-        public int Level { get; private set; } = -1;
-        public int MaxLvl;
+        public int Level => _upgrade == null ? -1 : _upgrade.Level;
         public int CurrentHp => _healthSystem.CurrentHp;
         public int MaxHp => _healthSystem.MaxHp;
         public bool IsAlive => _healthSystem.IsAlive;
         public Transform Transform => transform;
-        public bool CanInteract => _levels != null && IsMaxLevel() == false;
+        public bool CanInteract => _upgrade != null && _upgrade.CanUpgrade;
 
         [Inject]
         private void Init(IInteractableService interactableService, IResourceService referenceService)
@@ -37,70 +37,35 @@ namespace Assets.Scripts.Buildings
         public void Initialize(BuildingConfig config)
         {
             _levels = config.Levels.ToDictionary(entry => entry.Level, entry => entry);
+            int maxLevel = _levels.Keys.Max();
+            int[] costs = Enumerable.Repeat(-1, maxLevel + 1).ToArray();
+            foreach (BuildingLevelConfig level in _levels.Values) costs[level.Level] = level.UpgradeCost;
+            _upgrade = new BuildingUpgrade(costs, cost => _playerResourceService.TrySpend(Enum.ResourceType.Gold, cost));
             SpawnAllAppearances();
-            MaxLvl = _levels.Keys.Max();
+            SetAppearance(0);
+            _healthSystem?.Initialize(_levels[0].MaxHp);
             _buildPrice.ActivePrice(false);
-            UpgradeToLevel(0);
         }
 
         private void SpawnAllAppearances()
         {
             _appearanceInstances = new Dictionary<int, GameObject>();
-            foreach (var level in _levels.Values)
+            foreach (BuildingLevelConfig level in _levels.Values)
             {
                 if (level.AppearancePrefab != null)
                 {
-                    var appearance = Instantiate(level.AppearancePrefab, transform);
+                    GameObject appearance = Instantiate(level.AppearancePrefab, transform);
                     appearance.SetActive(false);
                     _appearanceInstances[level.Level] = appearance;
                 }
             }
         }
 
-        public bool TryGetLevelData(int level, out BuildingLevelConfig data)
-        {
-            data = null;
-            return _levels == null ? false : _levels.TryGetValue(level, out data);
-        }
-
-        public void UpgradeToLevel(int newLevel)
-        {
-            if (!CanUpgradeToLevel(newLevel, out var data)) return;
-
-            ApplyUpgrade(newLevel, data);
-        }
-
-        private bool CanUpgradeToLevel(int newLevel, out BuildingLevelConfig data)
-        {
-            data = null;
-
-            if (newLevel <= Level) return false;
-            if (newLevel > MaxLvl) return false;
-            if (!TryGetLevelData(newLevel, out data)) return false;
-
-            return true;
-        }
-
-        private void ApplyUpgrade(int newLevel, BuildingLevelConfig data)
-        {
-            Level = newLevel;
-            SetAppearance(newLevel);
-            _healthSystem?.Initialize(data.MaxHp);
-            
-            if (IsMaxLevel())
-            {
-                _buildPrice.ActivePrice(false);
-                _interactableService.Clear(this);
-            }
-
-            Debug.Log($"Building upgraded to level {Level}");
-        }
-
         private void SetAppearance(int level)
         {
             if (_currentAppearance != null) _currentAppearance.SetActive(false);
 
-            if (_appearanceInstances.TryGetValue(level, out var appearance))
+            if (_appearanceInstances.TryGetValue(level, out GameObject appearance))
             {
                 appearance.SetActive(true);
                 _currentAppearance = appearance;
@@ -109,15 +74,21 @@ namespace Assets.Scripts.Buildings
 
         public void Interactable()
         {
-            var spend = _playerResourceService.TrySpend(Enum.ResourceType.Gold, _levels[Level + 1].UpgradeCost);
-            if (!IsMaxLevel() && spend) UpgradeToLevel(Level + 1);
+            if (_upgrade == null || _upgrade.TryUpgrade() == false) return;
+            SetAppearance(Level);
+            if (CanInteract) _buildPrice.SetPrice(_upgrade.NextCost);
+            else
+            {
+                _buildPrice.ActivePrice(false);
+                _interactableService.Clear(this);
+            }
         }
 
         public void TakeDamage(int amount)
         {
             _healthSystem.TakeDamage(amount);
 
-            if (!IsAlive)
+            if (IsAlive == false)
             {
                 Debug.Log($"{gameObject.name} destroyed!");
                 Destroy(gameObject);
@@ -126,7 +97,8 @@ namespace Assets.Scripts.Buildings
 
         public void SetSelected(bool selected)
         {
-            _buildPrice.ActivePrice(selected);
+            if (selected && CanInteract) _buildPrice.SetPrice(_upgrade.NextCost);
+            _buildPrice.ActivePrice(selected && CanInteract);
         }
 
         private void OnTriggerEnter2D(Collider2D collision)
@@ -143,7 +115,7 @@ namespace Assets.Scripts.Buildings
         {
             _interactableService?.Clear(this);
         }
-        private bool IsMaxLevel() => Level == MaxLvl;
+
         private bool IsPlayerCollider(Collider2D collider) => collider.CompareTag(Constants.Constants.PLAYER_TAG);
     }
 }
