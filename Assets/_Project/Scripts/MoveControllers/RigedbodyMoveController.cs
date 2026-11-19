@@ -1,40 +1,47 @@
-using System;
-using Assets.ScriptableObjects;
 using Assets.Scripts.Interfaces;
 using UnityEngine;
-using Zenject;
 
 namespace Assets.Scripts.MoveControllers
 {
     public class RigedbodyMoveController : MonoBehaviour, IMoveController
     {
-        [SerializeField] private SpriteRenderer _spriteRenderer;
         private Rigidbody2D _rb;
-
-        private float _currentSpeed = 0;
+        private Collider2D _collider;
+        private float _currentSpeed;
         private Vector2 _direction;
-        private void Awake()
-        {
-            _rb = GetComponent<Rigidbody2D>();
-            _spriteRenderer = GetComponent<SpriteRenderer>();
-        }
+        private float _leftBound = float.NegativeInfinity;
+        private float _rightBound = float.PositiveInfinity;
 
-        private void FixedUpdate()   
+        public void ConfigureBounds(float leftBound, float rightBound)
         {
-            _rb.linearVelocity = new Vector2(_direction.x * _currentSpeed, _rb.linearVelocity.y);
-            if (_direction.x < 0 && !_spriteRenderer.flipX) _spriteRenderer.flipX = true;
-            else if (_direction.x > 0 && _spriteRenderer.flipX)
-            {
-                _spriteRenderer.flipX = false;
-            }
-            
-            Debug.Log(_direction);
+            _leftBound = leftBound;
+            _rightBound = rightBound;
         }
 
         public void Move(Vector2 direction, float speed)
         {
             _currentSpeed = speed;
-            _direction = direction;
+            _direction = new Vector2(direction.x == 0 ? 0 : Mathf.Sign(direction.x), 0);
+        }
+
+        private void Awake()
+        {
+            _rb = GetComponent<Rigidbody2D>();
+            _collider = GetComponent<Collider2D>();
+        }
+
+        private void FixedUpdate()
+        {
+            float velocity = _direction.x * _currentSpeed;
+            if (_collider != null)
+            {
+                float leftDistance = Mathf.Max(0, _collider.bounds.min.x - _leftBound);
+                float rightDistance = Mathf.Max(0, _rightBound - _collider.bounds.max.x);
+                velocity = Mathf.Clamp(velocity, -leftDistance / Time.fixedDeltaTime, rightDistance / Time.fixedDeltaTime);
+            }
+
+            _rb.linearVelocity = new Vector2(velocity, _rb.linearVelocity.y);
         }
     }
 }
+

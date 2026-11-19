@@ -5,6 +5,7 @@ using Assets.Scripts.Character;
 using Assets.Scripts.Enemy;
 using Assets.Scripts.Factories;
 using Assets.Scripts.Interfaces;
+using Assets.Scripts.MoveControllers;
 using Assets.Scripts.Wallet;
 using Assets.Scripts.World;
 using Unity.Cinemachine;
@@ -49,6 +50,10 @@ namespace Assets.Installer
         {
             Container.Bind<PlayerConfig>().FromInstance(_playerConfig);
             Player character = Container.InstantiatePrefabForComponent<Player>(_characterController, _playerSpawnpPoint.position, Quaternion.identity, null);
+            int halfWidth = _worldGridConfig.Width / 2;
+            float leftBound = _groundTilemap.CellToWorld(new Vector3Int(-halfWidth, 0, 0)).x;
+            float rightBound = _groundTilemap.CellToWorld(new Vector3Int(halfWidth, 0, 0)).x;
+            character.GetComponent<RigedbodyMoveController>().ConfigureBounds(leftBound, rightBound);
             Container.BindInterfacesAndSelfTo<Player>().FromInstance(character).AsSingle();
             Container.BindInterfacesAndSelfTo<CharacterInputHandler>().AsSingle().WithArguments(character).NonLazy();
             _cinemachineCamera.Follow = character.transform;
@@ -82,3 +87,4 @@ namespace Assets.Installer
         }
     }
 }
+
