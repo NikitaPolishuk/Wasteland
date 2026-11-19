@@ -30,8 +30,7 @@ namespace Assets.Scripts.Factories
         {
             if (_configsDict.TryGetValue(type, out var config))
             {
-                var environment = _container.InstantiatePrefab(config.EnvironmentPrefab, position, Quaternion.identity, null);
-                return environment;
+                return Create(config, position, config.EnvironmentPrefab.transform.localScale);
             }
 
             Debug.LogWarning($"environment {type} not found!");
@@ -40,9 +39,9 @@ namespace Assets.Scripts.Factories
         
         public GameObject Create(EnvironmentType type, Vector2 position, Vector3 scale)
         {
-            var environment = Create(type, position);
-            if (environment != null) environment.transform.localScale = scale;
-            return environment;
+            if (_configsDict.TryGetValue(type, out EnvironmentConfig config)) return Create(config, position, scale);
+            Debug.LogWarning($"environment {type} not found!");
+            return null;
         }
     }
 }

@@ -12,7 +12,17 @@ namespace Systems
         void Start()
         {
             _startPos = transform.position.x;
-            _length = GetComponent<SpriteRenderer>().bounds.size.x;
+            SpriteRenderer[] renderers = GetComponentsInChildren<SpriteRenderer>();
+            if (renderers.Length == 0)
+            {
+                Debug.LogError($"Background {name} has no SpriteRenderer.", this);
+                enabled = false;
+                return;
+            }
+            Bounds bounds = renderers[0].bounds;
+            foreach (SpriteRenderer spriteRenderer in renderers)
+                bounds.Encapsulate(spriteRenderer.bounds);
+            _length = bounds.size.x;
         }
         
         void FixedUpdate()

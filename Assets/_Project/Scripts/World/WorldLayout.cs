@@ -2,6 +2,8 @@ using System.Collections.Generic;
 using Assets.ScriptableObjects;
 using Assets.ScriptableObjects.BuildingConfig;
 using Assets.Scripts.Enum;
+using UnityEngine;
+using UnityEngine.Tilemaps;
 
 namespace Assets.Scripts.World
 {
@@ -57,6 +59,20 @@ namespace Assets.Scripts.World
                 }
             EnvironmentLayout.Validate(config, result.Errors);
             return result;
+        }
+
+        public void ValidatePlayerCollider(Tilemap tilemap, int playerCell, float colliderWidth)
+        {
+            float center = tilemap.CellToWorld(new Vector3Int(LeftCell + playerCell, 0, 0)).x;
+            center += tilemap.transform.TransformVector(new Vector3(tilemap.cellSize.x / 2f, 0, 0)).x;
+            float halfWidth = Mathf.Abs(colliderWidth) / 2f;
+            foreach (WorldBuildingPlacement building in Buildings)
+            {
+                float first = tilemap.CellToWorld(new Vector3Int(LeftCell + building.Start, 0, 0)).x;
+                float second = tilemap.CellToWorld(new Vector3Int(LeftCell + building.End, 0, 0)).x;
+                if (center - halfWidth < Mathf.Max(first, second) && center + halfWidth > Mathf.Min(first, second))
+                    Errors.Add($"Player collider overlaps a building: {building.Config.name}.");
+            }
         }
 
         private bool ValidateBuilding(BuildingConfig config, string label, bool camp)

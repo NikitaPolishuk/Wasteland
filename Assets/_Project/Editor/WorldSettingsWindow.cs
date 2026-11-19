@@ -1,9 +1,11 @@
 using System;
 using System.Collections.Generic;
 using Assets.ScriptableObjects;
+using Assets.Installer;
 using Assets.Scripts.World;
 using UnityEditor;
 using UnityEngine;
+using UnityEngine.Tilemaps;
 
 public class WorldSettingsWindow : EditorWindow
 {
@@ -54,7 +56,13 @@ public class WorldSettingsWindow : EditorWindow
         if (_config.Camp != null) EditorGUILayout.LabelField("Camp width", _config.Camp.Area.ToString());
         WorldLayout layout = WorldLayout.Calculate(_config);
         foreach (string error in layout.Errors) EditorGUILayout.HelpBox(error, MessageType.Error);
-        EditorGUILayout.HelpBox("Camera width is checked when the scene starts.", MessageType.Info);
+        GameplaySceneInstaller installer = FindFirstObjectByType<GameplaySceneInstaller>();
+        Camera camera = Camera.main;
+        Tilemap tilemap = installer == null ? null : new SerializedObject(installer).FindProperty("_groundTilemap").objectReferenceValue as Tilemap;
+        if (camera == null || tilemap == null)
+            EditorGUILayout.HelpBox("Camera width cannot be checked: the scene camera or ground Tilemap is unavailable. It will be checked at startup.", MessageType.Info);
+        else if (WorldCameraWidthMonitor.IsTooWide(camera, tilemap, _config.Width))
+            EditorGUILayout.HelpBox("World is narrower than the visible camera area, or camera is not orthographic.", MessageType.Error);
         if (GUILayout.Button("New variant")) _previewSeed = unchecked(_previewSeed + 1);
         if (layout.IsValid)
         {

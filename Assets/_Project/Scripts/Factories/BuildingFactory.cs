@@ -32,10 +32,7 @@ namespace Assets.Scripts.Factories
         {
             if (_configsDict.TryGetValue(type, out var config))
             {
-                var building = _container.InstantiatePrefab(config.BuildingPrefab, position, Quaternion.identity, null);
-                var baseBuilding = building.GetComponent<Buildings.BaseBuilding>();
-                baseBuilding?.Initialize(config);
-                return building;
+                return Create(config, position);
             }
 
             Debug.LogWarning($"Building type {type} not found!");

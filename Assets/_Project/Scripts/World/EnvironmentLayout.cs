@@ -25,6 +25,17 @@ namespace Assets.Scripts.World
         public readonly List<EnvironmentPlacement> Placements = new List<EnvironmentPlacement>();
         private const int BUILDING_PROTECTION = 1;
 
+        private class PlacementContext
+        {
+            public bool[] Occupied;
+            public bool[] Other;
+            public bool[] ProtectedCells;
+            public bool[] Large;
+            public bool[] TreeCells;
+            public float MinScale = 1f;
+            public float MaxScale = 1f;
+        }
+
         public static void Validate(WorldGridConfig config, List<string> errors)
         {
             if (config.ForestMinLength <= 0 || config.ForestMaxLength < config.ForestMinLength) errors.Add("Forest length range is invalid.");
@@ -58,7 +69,7 @@ namespace Assets.Scripts.World
             foreach (WorldBuildingPlacement building in world.Buildings)
                 for (int i = Math.Max(0, building.Start - BUILDING_PROTECTION); i < Math.Min(config.Width, building.End + BUILDING_PROTECTION); i++) protectedCells[i] = true;
             foreach (EnvironmentSegment segment in result.Segments)
-                if (segment.IsForest) result.Place(segment, config.Trees, config.TreeDensity, large, null, protectedCells, config.TreeScaleMin, config.TreeScaleMax, random);
+                if (segment.IsForest) result.Place(segment, config.Trees, config.TreeDensity, new PlacementContext { Occupied = large, ProtectedCells = protectedCells, MinScale = config.TreeScaleMin, MaxScale = config.TreeScaleMax }, random);
             bool[] treeCells = (bool[])large.Clone();
             List<EnvironmentSegment> regions = new List<EnvironmentSegment>(result.Segments);
             // Gaps between buildings use open-ground densities; the protected cells remain unavailable.
@@ -67,9 +78,9 @@ namespace Assets.Scripts.World
             for (int i = 1; i < buildings.Count; i++)
                 if (buildings[i - 1].End < buildings[i].Start) regions.Add(new EnvironmentSegment { Start = buildings[i - 1].End, End = buildings[i].Start });
             foreach (EnvironmentSegment region in regions)
-                result.Place(region, config.Rocks, region.IsForest ? config.ForestRockDensity : config.OpenRockDensity, large, grass, protectedCells, 1f, 1f, random);
+                result.Place(region, config.Rocks, region.IsForest ? config.ForestRockDensity : config.OpenRockDensity, new PlacementContext { Occupied = large, Other = grass, ProtectedCells = protectedCells }, random);
             foreach (EnvironmentSegment region in regions)
-                result.Place(region, config.Grass, region.IsForest ? config.ForestGrassDensity : config.OpenGrassDensity, grass, null, protectedCells, 1f, 1f, random, large, treeCells);
+                result.Place(region, config.Grass, region.IsForest ? config.ForestGrassDensity : config.OpenGrassDensity, new PlacementContext { Occupied = grass, ProtectedCells = protectedCells, Large = large, TreeCells = treeCells }, random);
             return result;
         }
 
@@ -109,7 +120,7 @@ namespace Assets.Scripts.World
             }
         }
 
-        private void Place(EnvironmentSegment region, List<EnvironmentVariant> variants, float density, bool[] occupied, bool[] other, bool[] protectedCells, float minScale, float maxScale, Random random, bool[] large = null, bool[] treeCells = null)
+        private void Place(EnvironmentSegment region, List<EnvironmentVariant> variants, float density, PlacementContext context, Random random)
         {
             if (density <= 0 || variants == null) return;
             int target = (int)Math.Floor((region.End - region.Start) * (double)density);
@@ -127,8 +138,8 @@ namespace Assets.Scripts.World
                         bool free = true;
                         for (int i = start; i < start + variant.Config.Area; i++)
                         {
-                            if (occupied[i] || protectedCells[i] || (other != null && other[i])) { free = false; break; }
-                            if (large != null && large[i] && treeCells[i] == false) { free = false; break; }
+                            if (context.Occupied[i] || context.ProtectedCells[i] || (context.Other != null && context.Other[i])) { free = false; break; }
+                            if (context.Large != null && context.Large[i] && context.TreeCells[i] == false) { free = false; break; }
                         }
                         if (free) positions.Add(start);
                     }
@@ -140,8 +151,8 @@ namespace Assets.Scripts.World
                 for (int i = 0; i < eligible.Count; i++) { choice -= eligible[i].Weight; if (choice < 0) { selected = i; break; } }
                 EnvironmentVariant picked = eligible[selected];
                 int position = starts[selected][random.Next(starts[selected].Count)];
-                for (int i = position; i < position + picked.Config.Area; i++) occupied[i] = true;
-                Placements.Add(new EnvironmentPlacement { Config = picked.Config, Start = position, End = position + picked.Config.Area, Scale = minScale + (float)random.NextDouble() * (maxScale - minScale) });
+                for (int i = position; i < position + picked.Config.Area; i++) context.Occupied[i] = true;
+                Placements.Add(new EnvironmentPlacement { Config = picked.Config, Start = position, End = position + picked.Config.Area, Scale = context.MinScale + (float)random.NextDouble() * (context.MaxScale - context.MinScale) });
             }
         }
 

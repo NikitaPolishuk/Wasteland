@@ -77,6 +77,7 @@ namespace Assets.Installer
                     float right = _groundTilemap.CellToWorld(new Vector3Int(_layout.LeftCell + _worldGridConfig.Width, 0, 0)).x;
                     float half = Mathf.Abs(collider.size.x * scale.x) / 2f;
                     if (bottom.x - half < left || bottom.x + half > right) _layout.Errors.Add("Player collider exceeds world bounds.");
+                    _layout.ValidatePlayerCollider(_groundTilemap, _worldGridConfig.PlayerCell, half * 2f);
                 }
             }
             if (_layout.IsValid == false) throw new System.InvalidOperationException("World generation failed:\n" + string.Join("\n", _layout.Errors));
