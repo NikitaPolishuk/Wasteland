@@ -55,6 +55,7 @@ namespace Assets.Scripts.World
                         if (building.Config.BuildingType == requirement.Type) count++;
                     if (count < requirement.Minimum) result.Errors.Add($"Not enough buildings of type {requirement.Type}: {count}/{requirement.Minimum}.");
                 }
+            EnvironmentLayout.Validate(config, result.Errors);
             return result;
         }
 

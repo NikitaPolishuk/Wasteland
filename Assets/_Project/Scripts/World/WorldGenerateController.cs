@@ -26,17 +26,13 @@ namespace Assets.Scripts.World
                 buildings.Place(placement.Config, position);
             }
 
-            for (int index = 0; index < config.Width; index++)
+            EnvironmentLayout environmentLayout = EnvironmentLayout.Generate(config, layout, new System.Random());
+            foreach (EnvironmentPlacement placement in environmentLayout.Placements)
             {
-                bool occupied = Mathf.Abs(index - config.PlayerCell) <= 1;
-                foreach (WorldBuildingPlacement placement in layout.Buildings)
-                    if (index >= placement.Start && index < placement.End) occupied = true;
-                if (occupied) continue;
-                Vector3 position = tilemap.GetCellCenterWorld(new Vector3Int(layout.LeftCell + index, config.GroundY, 0));
-                int choice = Random.Range(0, 8);
-                if (choice < 2) environment.Place(choice == 0 ? EnvironmentType.Tree1 : EnvironmentType.Tree2, position);
-                else if (choice < 4) environment.Place(choice == 2 ? EnvironmentType.Grass1 : EnvironmentType.Grass2, position);
-                else if (choice == 4) environment.Place(Random.Range(0, 2) == 0 ? EnvironmentType.Rock1 : EnvironmentType.Rock2, position);
+                float center = (placement.Start + placement.End) / 2f;
+                Vector3 position = tilemap.CellToWorld(new Vector3Int(layout.LeftCell, config.GroundY, 0));
+                position += tilemap.transform.TransformVector(new Vector3(center * tilemap.cellSize.x, tilemap.cellSize.y / 2f, 0));
+                environment.Place(placement.Config, position, placement.Scale);
             }
         }
     }

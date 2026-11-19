@@ -19,6 +19,13 @@ namespace Assets.Scripts.Factories
             _configsDict = configs.ToDictionary(x => x.EnvironmentType, x => x);
         }
 
+        public GameObject Create(EnvironmentConfig config, Vector2 position, Vector3 scale)
+        {
+            GameObject instance = _container.InstantiatePrefab(config.EnvironmentPrefab, position, Quaternion.identity, null);
+            instance.transform.localScale = scale;
+            return instance;
+        }
+
         public GameObject Create(EnvironmentType type, Vector2 position)
         {
             if (_configsDict.TryGetValue(type, out var config))

@@ -31,4 +31,30 @@ MonoBehaviour:
     Gap: 0
   - Config: {fileID: 11400000, guid: 318235caf4772a74db03de8e529731c8, type: 2}
     Gap: 0
+  ForestMinLength: 12
+  ForestMaxLength: 30
+  OpenMinLength: 12
+  OpenMaxLength: 30
+  TreeScaleMin: 0.8
+  TreeScaleMax: 1.2
+  TreeDensity: 0.2
+  ForestRockDensity: 0.05
+  OpenRockDensity: 0.1
+  ForestGrassDensity: 0.2
+  OpenGrassDensity: 0.2
+  Trees:
+  - Config: {fileID: 11400000, guid: 0dfba60ed0e16fa4eaa5911c78faec56, type: 2}
+    Weight: 1
+  - Config: {fileID: 11400000, guid: 2f0ebc37811f9a54bb8998040228d81e, type: 2}
+    Weight: 1
+  Rocks:
+  - Config: {fileID: 11400000, guid: c1f1e2440ba251947b6a6c4bd74e3952, type: 2}
+    Weight: 1
+  - Config: {fileID: 11400000, guid: 852c92de1d9f1dc40b165f189ed7ed40, type: 2}
+    Weight: 1
+  Grass:
+  - Config: {fileID: 11400000, guid: b4145c6f8c09b2746a50be02ad7f12e0, type: 2}
+    Weight: 1
+  - Config: {fileID: 11400000, guid: 9569a20938cd4a247b8684cafba6ad0d, type: 2}
+    Weight: 1
   PlayerCell: 130

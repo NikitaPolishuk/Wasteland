@@ -18,6 +18,13 @@ namespace Assets.Scripts.World
             _environmentFactory = environmentFactory;
         }
 
+        public GameObject Place(EnvironmentConfig config, Vector3 worldPosition, float scale)
+        {
+            if (IsTileValid(worldPosition) == false) return null;
+            Vector3 surface = worldPosition + _groundTilemap.transform.TransformVector(new Vector3(0, _groundTilemap.cellSize.y / 2f, 0));
+            return _environmentFactory.Create(config, surface, Vector3.one * scale);
+        }
+
         protected override EnvironmentType GetTypeKey(EnvironmentConfig config) => config.EnvironmentType;
 
         public override GameObject Place(EnvironmentType type, Vector3 worldPosition)
